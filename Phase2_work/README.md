@@ -1,77 +1,148 @@
+## Members:
+
+Abdullahi Abdullahi: abdullahi204
+
+Mathieu Poulin: MPoulin42
+
+James Tedder: James-Tedder
+
+Colby Wirth: colby-usm
+
+
 # Project Tasks and Coding Style Standards
 
 ## Coding Style Standards
-- Follow [PEP 8](https://peps.python.org/pep-0008) for Python code formatting and style.
+- Adhere to [PEP 8](https://peps.python.org/pep-0008) guidelines for Python code formatting and style.
 
+## Repository Setup
+- **Tasks**:
+  - All team members have copied the contents of the main branch to their own branch.
+  - Confirm that each team member has cloned their respective branch from the GitHub repository.
+- **Assigned**: Team
+- **Deadline**: October 26, 2025
 
-## Potential tree hiearchy:
+## Team Member Contributions
+- **Tasks**:
+  - Record your progress throughout Phase 2  
+  - Each member is responsible for recording their own tasks, and submitting them to the team leader. 
+- **Assigned**: Entire Team
+- **Deadline**: November 14, 2025
 
-
-
-### Repository Setup (Completed by Oct 26)
-- Ensure everyone has copied the contents of main branch into their own
-- Ensure everyone has cloned THEIR branch of GitHub repository.
-
-## Scraping
+## Data Scraping
 
 ### Grants.gov Scraper
-- 1. Use **Beautiful Soup** library for scraping. Mathieu and Abdullahi (Deadline: October 30th) 
-- Create a script to perform multiple searches in Grants.gov database based on a user’s research files.
-  - For now, assume a list of strings is passed as a parameter.
-  - Function header example: `def db_scraper(fields: List)`
-- Implement a **grant normalizer** to parse and normalize data from the scraper function. James and Colby (Deadline Nov 2nd)
-  - Note that only one database (Grants.gov) is being scraped in this verison of the project - normalization should be a simple task.
+- **Tasks**:
+  - Develop a script using the **Beautiful Soup** library to perform multiple searches in the Grants.gov database based on a user’s research files.
+    - Assume a list of strings is passed as a parameter.
+    - Example function header: `def db_scraper(fields: List)`
+- **Assigned**: Mathieu, Abdullahi
+- **Deadline**: October 30, 2025
 
+### Grant Cleaner
+- **Tasks**:
+  - Implement a grant cleaner to parse and normalize data from the scraper function.
+    - Note: Only the Grants.gov database is scraped in this project version, so cleaning should be straightforward.
+- **Assigned**: James, Colby
+- **Deadline**: November 2, 2025
 
-## DB 
+## Database Development
 
 ### Database Schema Creation
-- Script for User Entity Colby (Deadline: October 30th)
-- Script for Application Entity Abdullahi (Deadline Nov 2nd)
-- Script for Deadline Entity Mathieu (Deadline Nov 2nd)
-- Script for Document Entity Mathieu (Deadline Nov 2nd)
-- Script for Grant Entity James (Deadline: October 30th)
-- Dispatcher script to run all build scripts in sequence Colby (Deadline: Nov 5th)
-- Index Creation Mathieu (Deadline: November 5th)
-- 
+- **User Entity Script**:
+  - **Assigned**: Colby
+  - **Deadline**: October 30, 2025
+- **Application Entity Script**:
+  - **Assigned**: Abdullahi
+  - **Deadline**: November 2, 2025
+- **Deadline Entity Script**:
+  - **Assigned**: Mathieu
+  - **Deadline**: November 2, 2025
+- **Document Entity Script**:
+  - **Assigned**: Mathieu
+  - **Deadline**: November 2, 2025
+- **Grant Entity Script**:
+  - **Assigned**: James
+  - **Deadline**: October 30, 2025
+- **Dispatcher Script**:
+  - Create a script to run all build scripts in sequence.
+  - **Assigned**: Colby
+  - **Deadline**: November 5, 2025
+- **Index Creation**:
+  - **Assigned**: Mathieu
+  - **Deadline**: November 5, 2025
 
 ## System Functionalities
-  - 1. Timer that spawns periodic scraper Colby (Deadline: November 8)
-  - 2. Timer that spawns daily deletion James (Deadline: November 5)
-  - 3. Trigger for User spawned scraping (with keywords defaulting to their own research_field attr) Abdullahi (November 5)
-  - 4. Infrastructure for Role-Based Permissions (RBP) - some python scripts? Colby (Deadline: November 8)
-      - Administrator view.
-      - User view.
+- **Periodic Scraper Timer**:
+  - Implement a timer to spawn periodic scraping tasks.  This is hardcoded at 3 days in the current version - this is subject to change.
+  - **Assigned**: Colby
+  - **Deadline**: November 8, 2025
+- **Daily Deletion Timer**:
+  - Implement a timer to spawn daily deletion tasks.
+  - **Assigned**: James
+  - **Deadline**: November 5, 2025
+- **User-Triggered Scraping**:
+  - Create a trigger for user-initiated scraping, defaulting to the user’s `research_field` attribute for keywords.
+  - **Assigned**: Abdullahi
+  - **Deadline**: November 5, 2025
+- **Role-Based Permissions (RBP) Infrastructure**:
+  - Develop infrastructure for role-based permissions, including:
+    - Administrator view
+    - User view
+  - **Assigned**: Colby
+  - **Deadline**: November 8, 2025
 
+## CRUD Operations
+- **Overview**:
+  - Each entity will have a dedicated Python script to trigger SQL logic (e.g., `user_crud.py`, `application_crud.py`).
+  - All SQL logic will reside in a single file (e.g., `db_operations.mysql`).
 
-
-### CRUD Operations
-- Each of these will have their own Python script that triggers the SQL logic (e.g. user_crud.py, application_crud.py)
-- The SQL logic is all under 1 file (e.g. db_operations.mysql)
-
-- **User Entity CRUD**:
-  - Add a script for sample data
-  - Implement Create, Read, Update, Delete operations. Colby (Deadline November 11)
-  - Consider authorization via email.
-    
-- **Application Entity CRUD**: )
-  - Add a script for sample data
-  - Implement Create, Read, Update, Delete operations. Abdullahi (Deadline November 8)
-    
-- **Document Entity CRUD**: Mathieu (Deadline: November 8)
-  - Add a script for sample data
+### User Entity CRUD
+- **Tasks**:
+  - Create a script to generate sample data.
   - Implement Create, Read, Update, Delete operations.
-    
-- **Internal Deadlines Entity CRUD**: Mathieu: (Deadline: November 8)
-  - Add a script for sample data
+  - Include authorization via email.
+- **Assigned**: Colby
+- **Deadline**: November 11, 2025
+
+### Application Entity CRUD
+- **Tasks**:
+  - Create a script to generate sample data.
   - Implement Create, Read, Update, Delete operations.
- 
-- **Grant Entity CRUD**: James: (Deadline: November 8)
-  - Add a script for sample data
+- **Assigned**: Abdullahi
+- **Deadline**: November 8, 2025
+
+### Document Entity CRUD
+- **Tasks**:
+  - Create a script to generate sample data.
   - Implement Create, Read, Update, Delete operations.
+- **Assigned**: Mathieu
+- **Deadline**: November 8, 2025
+
+### Internal Deadlines Entity CRUD
+- **Tasks**:
+  - Create a script to generate sample data.
+  - Implement Create, Read, Update, Delete operations.
+- **Assigned**: Mathieu
+- **Deadline**: November 8, 2025
+
+### Grant Entity CRUD
+- **Tasks**:
+  - Create a script for sample data.
+  - Implement Create, Read, Update, Delete operations.
+- **Assigned**: James
+- **Deadline**: November 8, 2025
 
 ## Query Optimization Analysis
-  - Show before/after query performance results for at least two queries. James, Abdullahi, Mathieu (Deadline: November 11)
-    
+- **Tasks**:
+  - Analyze and present before/after query performance results for at least two queries.
+- **Assigned**: James, Abdullahi, Mathieu
+- **Deadline**: November 11, 2025
 
-## Record Video (Everybody) (Deadline: November 14)
+## Video Presentation
+- **Tasks**:
+  - Record a project demonstration video.
+- **Assigned**: Entire Team
+- **Deadline**: November 14, 2025
+
+
+
