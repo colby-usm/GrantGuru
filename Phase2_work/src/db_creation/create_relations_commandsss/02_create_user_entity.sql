@@ -1,5 +1,5 @@
 /* 
-  User Table Relation 
+  User Table Relation
   Version: 28 October 2025
   Author: Colby Wirth
   Description: A User entity and their research fields
