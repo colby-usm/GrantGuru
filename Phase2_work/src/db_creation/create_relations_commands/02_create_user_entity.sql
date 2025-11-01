@@ -1,8 +1,8 @@
 /* 
-  User Table Relation 
-  Version: 28 October 2025
+  Users Table Relation
+  Version: 1 November 2025
   Author: Colby Wirth
-  Description: A User entity and their research fields
+  Description: A Users entity and their research fields
 */
 
 CREATE TABLE Users (
@@ -27,6 +27,6 @@ CREATE TABLE UserResearchFields (
     user_id INT,
     research_field_id INT,
     PRIMARY KEY (user_id, research_field_id),
-    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (research_field_id) REFERENCES ResearchField(research_field_id) ON DELETE CASCADE
 );
