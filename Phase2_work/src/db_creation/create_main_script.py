@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """
-
-
     File: create_main_script.py
     Version: 1 November 2025
     Author: Colby Wirth

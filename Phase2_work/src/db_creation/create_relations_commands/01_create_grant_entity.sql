@@ -1,5 +1,5 @@
 /* 
-  Users Table Relation
+  Grant Table Relation
   Version: 1 November 2025
   Author: James Tedder
   Description: A Grants entity encapsulates all fields scraped from Grants.gov
