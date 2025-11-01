@@ -1,6 +1,6 @@
 /* 
   Users Table Relation
-  Version: 28 October 2025
+  Version: 1 November 2025
   Author: Colby Wirth
   Description: A Users entity and their research fields
 */

@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """
-GrantGuruDB initializer
-- No password
-- Aborts if DB exists
-- Executes main.sql
-- Uses context manager for cursor
+
+    Main script to build the empty database
+    Version 1 November 2025
+    Author: Colby Wirth
+    Description:
+
+    GrantGuruDB initializer
+    Uses context manager for cursor
+    Builds the empty database with the info from your local .env
+
 """
 
 import os
@@ -12,7 +17,7 @@ from dotenv import load_dotenv
 import sys
 import mysql.connector
 from mysql.connector import errorcode
-from  src.utils.logging_utils import log_info, log_warning, log_error
+from src.utils.logging_utils import log_info, log_warning, log_error
 
 load_dotenv()
 DB_NAME = os.getenv("DB_NAME")
