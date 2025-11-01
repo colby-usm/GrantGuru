@@ -6,7 +6,7 @@
 */
 
 CREATE TABLE Users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID()))
 
     -- Composite attribute: Name = (f_name, m_name, l_name)
     f_name VARCHAR(50) NOT NULL,
