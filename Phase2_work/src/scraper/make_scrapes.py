@@ -1,6 +1,6 @@
 """
 
-    File: fetch_grant_details.py
+    File: make_scrapes.py
 
     Version: 1 November 2025
 
@@ -23,10 +23,9 @@ import time
 from typing import Optional
 
 
-from src.utils.grant_id_search import get_grant_ids, FundingCategory, OpportunityStatus
+from src.utils.grant_id_search import get_grant_ids
 from src.utils.logging_utils import log_warning, log_info, log_error, log_debug, log_default
 from src.utils.parse_scraper_args import parse_args
-
 
 def fetch_details(grant_id: str, verbose: bool = False) -> Optional[dict]:
     """
@@ -89,9 +88,9 @@ def fetch_details(grant_id: str, verbose: bool = False) -> Optional[dict]:
         log_error(f"  Request error for ID {grant_id}: {e}")
         return None
     except json.JSONDecodeError as e:
-        log_error(f"  JSON decode error for ID {grant_id}: {e}")
+        log_error(f"JSON decode error for ID {grant_id}: {e}")
         if verbose:
-            log_error(f"  Response text: {response.text[:200]}")
+            log_error(f"Response text: {response.text[:200]}")
         return None
 
 
@@ -128,7 +127,7 @@ def main():
     failed_ids = []
 
     for i, grant_id in enumerate(ids_to_fetch, 1):
-        log_info(f"\n[{i}/{len(ids_to_fetch)}] Fetching details for ID: {grant_id}")
+        log_info(f"[{i}/{len(ids_to_fetch)}] Fetching details for ID: {grant_id}")
         details = fetch_details(grant_id, verbose=args.verbose)
         
         if details:
