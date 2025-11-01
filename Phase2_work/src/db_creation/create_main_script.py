@@ -8,6 +8,7 @@
         GrantGuruDB initializer
         Uses context manager for cursor
         Builds the empty database with the info from your local .env
+
 """
 
 import os

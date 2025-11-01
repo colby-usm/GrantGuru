@@ -1,5 +1,0 @@
-SOURCE create_relations_commands/01_create_grant_entity.sql;
-SOURCE create_relations_commands/02_create_user_entity.sql;
-SOURCE create_relations_commands/03_create_application_entity.sql;
-SOURCE create_relations_commands/04_create_documents_entity.sql;
-SOURCE create_relations_commands/05_create_internal_deadlines_entity.sql;

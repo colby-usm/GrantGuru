@@ -1,10 +1,16 @@
 
 #!/usr/bin/env python3
 """
-GrantGuruDB Deleter
-- Prompts user for confirmation before deleting the DB
-- Aborts safely if DB does not exist
-- Uses .env for configuration
+
+
+    File: delete_db_script.py
+    Version: 1 November 2025
+    Author: Colby Wirth
+    Description:
+        - GrantGuruDB Deleter
+        - Prompts user for confirmation before deleting the DB
+        - Aborts safely if DB does not exist
+        - Uses .env for configuration
 """
 
 import os
