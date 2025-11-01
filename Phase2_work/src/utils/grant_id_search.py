@@ -1,3 +1,24 @@
+"""
+
+    File: grant_id_search.py
+
+    Version: 1 November 2025
+
+    Author: Mathieu Poulin
+ 
+    Description:
+        Provides functions and enums to search for grant opportunities on Grants.gov.
+        The main function, get_grant_ids(), allows fetching all grant IDs matching 
+        specified funding categories, keywords, and opportunity statuses.
+        It supports both enum and string inputs, paginates through all results,
+        and defaults to all funding categories if none are specified.
+
+        This module is primarily used by scraper.fetch_grant_details.py to obtain
+        grant IDs before fetching full grant details.
+ 
+"""
+
+
 import requests
 from typing import Iterable, List, Optional, Union
 from enum import Enum
@@ -80,27 +101,31 @@ def get_grant_ids(
         ...     statuses=[OpportunityStatus.POSTED]
         ... )
     """
-    # Process funding categories - convert to codes
     category_filter = ""
-    if funding_categories:
-        processed_codes = []
-        for cat in funding_categories:
-            if isinstance(cat, FundingCategory):
-                # It's an enum, use its value
-                processed_codes.append(cat.value)
-            elif isinstance(cat, str):
-                cat_upper = cat.strip().upper()
-                # Try to find matching enum by name
-                try:
-                    enum_member = FundingCategory[cat_upper]
-                    processed_codes.append(enum_member.value)
-                except KeyError:
-                    # Assume it's already a code
-                    processed_codes.append(cat_upper)
-            else:
-                raise TypeError(f"Invalid category type: {type(cat)}")
-        category_filter = "|".join(processed_codes)
-    
+    if funding_categories is None:
+        funding_categories = list(FundingCategory) #defaults to all funding categories
+
+
+    # Process funding categories - convert to codes
+    processed_codes = []
+    for cat in funding_categories:
+        if isinstance(cat, FundingCategory):
+            # It's an enum, use its value
+            processed_codes.append(cat.value)
+        elif isinstance(cat, str):
+            cat_upper = cat.strip().upper()
+            # Try to find matching enum by name
+            try:
+                enum_member = FundingCategory[cat_upper]
+                processed_codes.append(enum_member.value)
+            except KeyError:
+                # Assume it's already a code
+                processed_codes.append(cat_upper)
+        else:
+            raise TypeError(f"Invalid category type: {type(cat)}")
+    category_filter = "|".join(processed_codes)
+ 
+
     # Process statuses
     status_filter = ""
     if statuses:

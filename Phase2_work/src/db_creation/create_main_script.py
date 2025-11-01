@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
 
-    Main script to build the empty database
-    Version 1 November 2025
+
+    File: create_main_script.py
+    Version: 1 November 2025
     Author: Colby Wirth
     Description:
-
-    GrantGuruDB initializer
-    Uses context manager for cursor
-    Builds the empty database with the info from your local .env
+        Main script to build the empty database
+        GrantGuruDB initializer
+        Uses context manager for cursor
+        Builds the empty database with the info from your local .env
 
 """
 
