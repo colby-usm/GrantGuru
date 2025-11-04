@@ -1,20 +1,31 @@
 """
-Fetch detailed grant information from Grants.gov API.
 
-This script searches for grants using the grant_id_search module and fetches
-detailed information for each grant found.
+    File: make_scrapes.py
 
-Usage:
-    python fetch_grant_details.py -c HEALTH -n 10
-    python fetch_grant_details.py -k "climate change" -c ENVIRONMENT -v
+    Version: 1 November 2025
+
+    Author: Abdullahi Abdullahi
+    
+    Description:
+        Fetches detailed grant information from Grants.gov API.
+        Based upon a json file generated from grant_id_search.py
+
+    Usage:
+         Example:
+         python3  -m src.scraper.fetch_grant_details <args>
+         **see src.utils.parse_scraper_args.py to see appropiate args**
+
 """
+
 import requests
 import json
-import argparse
 import time
-from typing import List, Optional
-from grant_id_search import get_grant_ids, FundingCategory, OpportunityStatus
+from typing import Optional
 
+
+from src.utils.grant_id_search import get_grant_ids
+from src.utils.logging_utils import log_warning, log_info, log_error, log_debug, log_default
+from src.utils.parse_scraper_args import parse_args
 
 def fetch_details(grant_id: str, verbose: bool = False) -> Optional[dict]:
     """
@@ -29,57 +40,57 @@ def fetch_details(grant_id: str, verbose: bool = False) -> Optional[dict]:
     """
     # The API endpoint for fetching details
     url = "https://api.grants.gov/v1/api/fetchOpportunity"
-    
+ 
     headers = {
         "User-Agent": "Python Grant Fetcher",
         "Content-Type": "application/json",
     }
-    
+ 
     # The payload requires the opportunity ID
     payload = json.dumps({"opportunityId": grant_id})
 
     try:
         response = requests.post(url, headers=headers, data=payload, timeout=10)
-        
+ 
         # Check for HTTP errors (e.g., 404, 500)
         response.raise_for_status()
-        
+ 
         # Check if response has content
         if not response.text or response.text.strip() == "":
-            print(f"  Warning: Empty response for ID {grant_id}")
+            log_warning(f"Empty response for ID {grant_id}")
             return None
-        
+ 
         if verbose:
-            print(f"  Response status: {response.status_code}")
-            print(f"  Response length: {len(response.text)} characters")
-        
+            log_debug(f"  Response status: {response.status_code}")
+            log_debug(f"  Response length: {len(response.text)} characters")
+ 
         response_json = response.json()
-        
+ 
         # Return the entire data object for complete grant details
         data = response_json.get('data', {})
-        
+
         if data:
             # Add the ID to the data for reference
             data['id'] = grant_id
             return data
         else:
-            print(f"  Warning: No data found for ID {grant_id}")
+            log_warning(f"No data found for ID {grant_id}")
             if verbose:
-                print(f"  Full response: {response_json}")
+                log_debug(f"Full response: {response_json}")
             return None
 
     except requests.HTTPError as e:
-        print(f"  HTTP Error for ID {grant_id}: {e}")
+        log_error(f"  HTTP Error for ID {grant_id}: {e}")
         if verbose and hasattr(e.response, 'text'):
-            print(f"  Response text: {e.response.text[:200]}")
+            log_error(f"  Response text: {e.response.text[:200]}")
         return None
     except requests.RequestException as e:
-        print(f"  Request error for ID {grant_id}: {e}")
+        log_error(f"  Request error for ID {grant_id}: {e}")
         return None
     except json.JSONDecodeError as e:
-        print(f"  JSON decode error for ID {grant_id}: {e}")
+        log_error(f"JSON decode error for ID {grant_id}: {e}")
         if verbose:
-            print(f"  Response text: {response.text[:200]}")
+            log_error(f"Response text: {response.text[:200]}")
         return None
 
 
@@ -87,62 +98,11 @@ def main():
     """
     Main function to search for grant IDs, fetch their details, and save to a JSON file.
     """
-    parser = argparse.ArgumentParser(
-        description="Search for grants and fetch their details from Grants.gov API."
-    )
-    parser.add_argument(
-        "-c",
-        "--categories",
-        type=str,
-        nargs="+",
-        help="Funding categories (e.g., HL ED or HEALTH EDUCATION).",
-    )
-    parser.add_argument(
-        "-k",
-        "--keywords",
-        type=str,
-        help="Search keywords (e.g., 'climate change').",
-    )
-    parser.add_argument(
-        "-s",
-        "--statuses",
-        type=str,
-        nargs="+",
-        default=["posted"],
-        help="Opportunity statuses (e.g., posted closed archived forecasted). Default: posted",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=str,
-        default="grant_details.json",
-        help="Output JSON file for grant details (default: grant_details.json).",
-    )
-    parser.add_argument(
-        "-n",
-        "--num",
-        type=int,
-        default=None,
-        help="Number of grants to fetch details for (default: all grants).",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Enable verbose output for debugging.",
-    )
-    parser.add_argument(
-        "-d",
-        "--delay",
-        type=float,
-        default=0.5,
-        help="Delay between requests in seconds (default: 0.5).",
-    )
-    
-    args = parser.parse_args()
+ 
+    args = parse_args()
 
     # Search for grant IDs using grant_id_search module
-    print("Searching for grants...")
+    log_info("Searching for grants...")
     try:
         grant_ids = get_grant_ids(
             funding_categories=args.categories,
@@ -150,24 +110,24 @@ def main():
             statuses=args.statuses
         )
     except Exception as e:
-        print(f"Error searching for grants: {e}")
+        log_error(f"Error searching for grants: {e}")
         return
 
     if not grant_ids:
-        print("No grants found matching the search criteria.")
+        log_warning("No grants found matching the search criteria.")
         return
 
     # Determine how many grants to fetch
     num_to_fetch = args.num if args.num is not None else len(grant_ids)
     ids_to_fetch = grant_ids[:num_to_fetch]
-    
-    print(f"Found {len(grant_ids)} IDs. Fetching details for {len(ids_to_fetch)} grants...")
+ 
+    log_info(f"Found {len(grant_ids)} IDs. Fetching details for {len(ids_to_fetch)} grants...")
 
     fetched_details = []
     failed_ids = []
 
     for i, grant_id in enumerate(ids_to_fetch, 1):
-        print(f"\n[{i}/{len(ids_to_fetch)}] Fetching details for ID: {grant_id}")
+        log_info(f"[{i}/{len(ids_to_fetch)}] Fetching details for ID: {grant_id}")
         details = fetch_details(grant_id, verbose=args.verbose)
         
         if details:
@@ -176,8 +136,8 @@ def main():
             synopsis = details.get('synopsis', {})
             agency = synopsis.get('agencyName', 'N/A')
             
-            print(f"  Title: {title}")
-            print(f"  Agency: {agency}")
+            log_default(f"  Title: {title}")
+            log_default(f"  Agency: {agency}")
             fetched_details.append(details)
         else:
             failed_ids.append(grant_id)
@@ -205,12 +165,12 @@ def main():
     try:
         with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)
-        print(f"\n---\nSuccessfully fetched and saved details for {len(fetched_details)} grants.")
+        log_info(f"Successfully fetched and saved details for {len(fetched_details)} grants.")
         if failed_ids:
-            print(f"Failed to fetch {len(failed_ids)} grants (IDs saved in metadata).")
-        print(f"Output saved to: {args.output}")
+            log_warning(f"Failed to fetch {len(failed_ids)} grants (IDs saved in metadata).")
+        log_info(f"Output saved to: {args.output}")
     except IOError as e:
-        print(f"\nError: Could not write to output file {args.output}: {e}")
+        log_error(f"Error: Could not write to output file {args.output}: {e}")
 
 
 if __name__ == "__main__":
