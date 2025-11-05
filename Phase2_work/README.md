@@ -14,9 +14,9 @@ Colby Wirth: colby-usm
 ## Coding Style Standards
 - Adhere to [PEP 8](https://peps.python.org/pep-0008) guidelines for Python code formatting and style.
 
-## Repository Setup
+## ~~Repository Setup~~
 - **Tasks**:
-  - All team members have copied the contents of the main branch to their own branch.
+  -  All team members have copied the contents of the main branch to their own branch.
   - Confirm that each team member has cloned their respective branch from the GitHub repository.
 - **Assigned**: Team
 - **Deadline**: October 26, 2025
@@ -30,7 +30,7 @@ Colby Wirth: colby-usm
 
 ## Data Scraping
 
-### Grants.gov Scraper
+### ~~Grants.gov Scraper~~
 - **Tasks**:
   - Develop a script using the **Beautiful Soup** library to perform multiple searches in the Grants.gov database based on a user’s research files.
     - Assume a list of strings is passed as a parameter.
@@ -38,7 +38,7 @@ Colby Wirth: colby-usm
 - **Assigned**: Mathieu, Abdullahi
 - **Deadline**: October 30, 2025
 
-### Grant Cleaner
+### ~~Grant Cleaner~~
 - **Tasks**:
   - Implement a grant cleaner to parse and normalize data from the scraper function.
     - Note: Only the Grants.gov database is scraped in this project version, so cleaning should be straightforward.
@@ -48,22 +48,22 @@ Colby Wirth: colby-usm
 ## Database Development
 
 ### Database Schema Creation
-- **User Entity Script**:
+~~- **User Entity Script**:~~
   - **Assigned**: Colby
   - **Deadline**: October 30, 2025
-- **Application Entity Script**:
+~~- **Application Entity Script**:~~
   - **Assigned**: Abdullahi
   - **Deadline**: November 2, 2025
-- **Deadline Entity Script**:
+~~- **Deadline Entity Script**:~~
   - **Assigned**: Mathieu
   - **Deadline**: November 2, 2025
-- **Document Entity Script**:
+~~- **Document Entity Script**:~~
   - **Assigned**: Mathieu
   - **Deadline**: November 2, 2025
-- **Grant Entity Script**:
+~~- **Grant Entity Script**:~~
   - **Assigned**: James
   - **Deadline**: October 30, 2025
-- **Dispatcher Script**:
+~~- **Dispatcher Script**:~~
   - Create a script to run all build scripts in sequence.
   - **Assigned**: Colby
   - **Deadline**: November 5, 2025
