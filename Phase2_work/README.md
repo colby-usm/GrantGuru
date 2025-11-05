@@ -48,22 +48,22 @@ Colby Wirth: colby-usm
 ## Database Development
 
 ### Database Schema Creation
-~~- **User Entity Script**:~~
+- ~~**User Entity Script**:~~
   - **Assigned**: Colby
   - **Deadline**: October 30, 2025
-~~- **Application Entity Script**:~~
+- ~~**Application Entity Script**:~~
   - **Assigned**: Abdullahi
   - **Deadline**: November 2, 2025
-~~- **Deadline Entity Script**:~~
+- ~~**Deadline Entity Script**:~~
   - **Assigned**: Mathieu
   - **Deadline**: November 2, 2025
-~~- **Document Entity Script**:~~
+- ~~**Document Entity Script**:~~
   - **Assigned**: Mathieu
   - **Deadline**: November 2, 2025
-~~- **Grant Entity Script**:~~
+- ~~**Grant Entity Script**:~~
   - **Assigned**: James
   - **Deadline**: October 30, 2025
-~~- **Dispatcher Script**:~~
+- ~~**Dispatcher Script**:~~
   - Create a script to run all build scripts in sequence.
   - **Assigned**: Colby
   - **Deadline**: November 5, 2025
