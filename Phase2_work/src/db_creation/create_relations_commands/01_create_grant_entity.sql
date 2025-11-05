@@ -6,7 +6,7 @@
 */
 
 create table Grants (
-grant_id char(20) PRIMARY KEY,
+grant_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
 grant_title varchar(255),
 description TEXT,
 research_field varchar(250),

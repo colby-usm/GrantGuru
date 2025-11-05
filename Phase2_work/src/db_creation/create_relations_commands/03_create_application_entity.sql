@@ -5,9 +5,10 @@
   Description: The Applications entity 
 */
 CREATE TABLE Applications (
-    application_id CHAR(20) PRIMARY KEY,
+    application_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
+
     user_id BINARY(16),
-    grant_id CHAR(20) NOT NULL,
+    grant_id BINARY(16) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'pending',
     application_date DATE NOT NULL,
 

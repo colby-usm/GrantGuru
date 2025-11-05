@@ -11,7 +11,7 @@ CREATE TABLE Documents (
     document_type VARCHAR(10) NOT NULL,
     document_size INT UNSIGNED NOT NULL,
     upload_date DATETIME NOT NULL,
-    application_id CHAR(20) NOT NULL,
+    application_id BINARY(16) NOT NULL,
 
     FOREIGN KEY (application_id) REFERENCES Applications(application_id) ON DELETE CASCADE
 );
