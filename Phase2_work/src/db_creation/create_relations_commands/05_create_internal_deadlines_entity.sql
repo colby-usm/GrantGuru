@@ -10,5 +10,7 @@ CREATE TABLE InternalDeadlines (
 
     deadline_name VARCHAR(100) NOT NULL,
     deadline_date DATETIME NOT NULL,
+    application_id CHAR(20) NOT NULL,
+
     FOREIGN KEY (application_id) REFERENCES Applications(application_id) ON DELETE CASCADE
 );

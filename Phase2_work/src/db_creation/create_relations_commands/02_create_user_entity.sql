@@ -6,7 +6,7 @@
 */
 
 CREATE TABLE Users (
-    user_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID()))
+    user_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
 
     -- Composite attribute: Name = (f_name, m_name, l_name)
     f_name VARCHAR(50) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE ResearchField (
 );
 
 CREATE TABLE UserResearchFields (
-    user_id INT,
+    user_id BINARY(16),
     research_field_id INT,
     PRIMARY KEY (user_id, research_field_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,

@@ -1,14 +1,14 @@
 /* 
-  Grant Table Relation
+  Grants Table Relation
   Version: 1 November 2025
   Author: James Tedder
   Description: A Grants entity encapsulates all fields scraped from Grants.gov
 */
 
-create table grants (
+create table Grants (
 grant_id char(20) PRIMARY KEY,
 grant_title varchar(255),
-description varchar(18000),
+description TEXT,
 research_field varchar(250),
 expected_award_count int CHECK (expected_award_count >= 0),
 eligibility varchar(4000),
