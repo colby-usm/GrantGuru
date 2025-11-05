@@ -63,17 +63,24 @@ try:
 
 
     for path in BUILD_FILES:
-        with open(path, "r") as f:
-            sql = f.read()
+        try:
+            with open(path, "r") as f:
+                sql = f.read()
 
-        statements = [s.strip() for s in sql.split(';') if s.strip()]
-        for statement in statements:
-            cursor.execute(statement)
+            statements = [s.strip() for s in sql.split(';') if s.strip()]
+            for statement in statements:
+                try:
+                    cursor.execute(statement)
+                except mysql.connector.Error as err:
+                    log_error(f"MySQL Error in file '{path}' on statement:\n{statement}\nError: {err}")
+                    sys.exit(2)
  
-        cnx.commit()
-        log_info(f"Completed {path}")
+            cnx.commit()
+            log_info(f"Completed {path}")
 
-    log_info(f"Empty Database initalized successfully.")
+        except Exception as e:
+            log_error(f"Unexpected error while processing file '{path}': {e}")
+            sys.exit(2)
 
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
