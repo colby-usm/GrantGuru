@@ -27,6 +27,7 @@ coverage/
 htmlcov/
 instance/
 *.sqlite3
+pyrightconfig.json
 
 # Virtual Environments
 .venv/
@@ -62,3 +63,4 @@ coverage/
 *.bak
 *.swp
 *.swo
+runtime/
