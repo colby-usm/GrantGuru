@@ -72,7 +72,7 @@ Colby Wirth: colby-usm
   - **Deadline**: November 5, 2025
 
 ## System Functionalities
-- **Periodic Scraper Timer**:
+- ~~**Periodic Scraper Timer**:~~
   - Implement a timer to spawn periodic scraping tasks.  This is hardcoded at 3 days in the current version - this is subject to change.
   - **Assigned**: Colby
   - **Deadline**: November 8, 2025
@@ -80,7 +80,7 @@ Colby Wirth: colby-usm
   - Implement a timer to spawn daily deletion tasks.
   - **Assigned**: James
   - **Deadline**: November 5, 2025
-- **User-Triggered Scraping**:
+- ~~**User-Triggered Scraping**:~~
   - Create a trigger for user-initiated scraping, defaulting to the user’s `research_field` attribute for keywords.
   - **Assigned**: Abdullahi
   - **Deadline**: November 5, 2025
@@ -137,6 +137,18 @@ Colby Wirth: colby-usm
   - Analyze and present before/after query performance results for at least two queries.
 - **Assigned**: James, Abdullahi, Mathieu
 - **Deadline**: November 11, 2025
+
+
+## Final Review of DB core logic
+- **Tasks**:
+  - Initializer Script works
+  - Scraper can execute to populate the DB initially
+  - User scrapped and auto scraped entities are entered into the DB
+  - Unreferenced Grants that are *archieved* are deleted by the daily deletion thread
+  - RBPs ensure proper views
+  - CRUD operations work properly
+- **Assigned**: Colby
+- **Deadline**: November 12, 2025
 
 ## Video Presentation
 - **Tasks**:
