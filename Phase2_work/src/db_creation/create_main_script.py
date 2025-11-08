@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
     File: create_main_script.py
-    Version: 1 November 2025
+    Version: 8 November 2025
     Author: Colby Wirth
     Description:
         Main script to build the empty database
@@ -16,19 +16,19 @@ from dotenv import load_dotenv
 import sys
 import mysql.connector
 from mysql.connector import errorcode
-from src.utils.logging_utils import log_info, log_warning, log_error
+from src.utils.logging_utils import log_info, log_error
 
 load_dotenv()
-DB_NAME = os.getenv("DB_NAME")
-HOST = os.getenv("HOST")
-MYSQL_USER = os.getenv("MYSQL_USER")
-MYSQL_PASS = os.getenv("MYSQL_PASS")
+DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
+HOST = os.getenv("HOST", "localhost")
+MYSQL_USER = os.getenv("GG_USER", "root")
+MYSQL_PASS = os.getenv("GG_PASS", "")
 
 
 BUILD_FILES=[
-    "src/db_creation/create_relations_commands/01_create_grant_entity.sql",
-    "src/db_creation/create_relations_commands/02_create_user_entity.sql",
-    "src/db_creation/create_relations_commands/03_create_application_entity.sql",
+    "src/db_creation/create_relations_commands/01_create_grants_entity.sql",
+    "src/db_creation/create_relations_commands/02_create_users_entity.sql",
+    "src/db_creation/create_relations_commands/03_create_applications_entity.sql",
     "src/db_creation/create_relations_commands/04_create_documents_entity.sql",
     "src/db_creation/create_relations_commands/05_create_internal_deadlines_entity.sql"
 ]

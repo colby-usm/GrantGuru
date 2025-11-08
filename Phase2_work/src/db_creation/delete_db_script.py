@@ -22,10 +22,10 @@ from  src.utils.logging_utils import log_info, log_warning, log_error
 
 # Load environment variables
 load_dotenv()
-DB_NAME = os.getenv("DB_NAME")
+DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
-MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASS = os.getenv("MYSQL_PASS", "")
+MYSQL_USER = os.getenv("GG_USER", "root")
+MYSQL_PASS = os.getenv("GG_PASS", "")
 
 
 try:
