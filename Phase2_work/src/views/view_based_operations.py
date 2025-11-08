@@ -1,16 +1,23 @@
 '''
-
+    File: view_based_operations.py
+    Version: 8 November 2025
+    Author: Colby Wirth
+    Description:
+        - Protects tables with role based permissions
+        - Generated with the help of AI tools
 '''
 from enum import Enum
 from typing import Optional
 
 
 class Role(Enum):
+    """Defines possible user roles in the system."""
     USER = "user"
     ADMIN = "admin"
 
 
 class Entity(Enum):
+    """Defines the core database entities for RBAC checks."""
     USERS = "users"
     APPLICATION = "application"
     APPLICATION_DOCUMENTS = "application_documents"
@@ -19,10 +26,11 @@ class Entity(Enum):
 
 
 class Permission:
-    """Simple RBP permission checker"""
+    """Implements role-based permission checks for CRUD operations."""
     
     @staticmethod
     def can_read(role: Role, entity: Entity, user_id: int, resource_owner_id: Optional[int] = None) -> bool:
+        """Check if the given role can read a resource."""
         if role == Role.ADMIN:
             return True
         
@@ -36,6 +44,7 @@ class Permission:
     
     @staticmethod
     def can_create(role: Role, entity: Entity, user_id: int, resource_owner_id: Optional[int] = None) -> bool:
+        """Check if the given role can create a resource."""
         if role == Role.ADMIN:
             return True
         
@@ -47,6 +56,7 @@ class Permission:
     
     @staticmethod
     def can_update(role: Role, entity: Entity, user_id: int, resource_owner_id: Optional[int] = None) -> bool:
+        """Check if the given role can update a resource."""
         if role == Role.ADMIN:
             return True
         
@@ -58,6 +68,7 @@ class Permission:
     
     @staticmethod
     def can_delete(role: Role, entity: Entity, user_id: int, resource_owner_id: Optional[int] = None) -> bool:
+        """Check if the given role can delete a resource."""
         if role == Role.ADMIN:
             return True
         
@@ -69,7 +80,12 @@ class Permission:
 
 
 def require_permission(action: str, entity: Entity):
-    """Decorator to protect CRUD operations"""
+    """Decorator to enforce RBAC before executing a CRUD operation.
+    
+    Args:
+        action: One of 'read', 'create', 'update', 'delete'.
+        entity: The Entity type being accessed.
+    """
     def decorator(func):
         def wrapper(role: Role, user_id: int, resource_owner_id: Optional[int] = None, *args, **kwargs):
             permission_check = {

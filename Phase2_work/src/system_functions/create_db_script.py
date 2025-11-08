@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-
     File: create_db_script.py
     Version: 8 November 2025
     Author: Colby Wirth
@@ -9,7 +8,6 @@
         GrantGuruDB initializer
         Uses context manager for cursor
         Builds the empty database with the info from your local .env
-
 """
 
 import os
