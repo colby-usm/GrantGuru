@@ -29,6 +29,4 @@ INSERT INTO Users (
     %(institution)s,
     %(email)s,
     %(password)s
-);
-
-SELECT BIN_TO_UUID(user_id) as user_id FROM Users WHERE email = %(email)s;
+)

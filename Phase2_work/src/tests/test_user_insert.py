@@ -1,6 +1,16 @@
+"""
+    File: test_user_insert.py
+    Version: 8 November 2025
+    Author: Colby Wirth
+    Description:
+        Test insert user script using single-statement RETURNING query
+"""
+
 import os
 import mysql.connector
 from hashlib import sha256
+
+SCRIPT_PATH = "src/entity_crud_operations/users_and_research_fields/create_users.sql"
 
 # DB config from environment
 DB_CONFIG = {
@@ -10,37 +20,31 @@ DB_CONFIG = {
     "database": os.environ.get("DB_NAME", "GrantGuruDB")
 }
 
-# Generate test user data
+# Test user data
 test_user = {
-    "f_name": None,
+    "f_name": "A-New",
     "m_name": None,
     "l_name": "User",
-    "institution": "Some University",
-    "email": f"test3@gmail.com",  # unique email
-    "password": sha256("123456".encode()).hexdigest()     # hashed password
+    "institution": "My University",
+    "email": "test3@gmail.com",  # must be unique
+    "password": sha256("123456".encode()).hexdigest()
 }
 
-# Load SQL script and split into statements
-with open("src/entity_crud_operations/users/create_users.sql", "r") as f:
+# Load SQL script
+with open(SCRIPT_PATH, "r") as f:
     sql_script = f.read()
-
-# Split by semicolon to get individual statements
-statements = [s.strip() for s in sql_script.split(';') if s.strip()]
 
 try:
     conn = mysql.connector.connect(**DB_CONFIG)
     cursor = conn.cursor()
-    
-    # Execute INSERT statement
-    cursor.execute(statements[0], test_user)
-    
-    # Execute SELECT statement
-    cursor.execute(statements[1], test_user)
-    user_id = cursor.fetchone()[0]
-    
+
+    # Execute single INSERT ... RETURNING statement
+    cursor.execute(sql_script, test_user)
+
+
     conn.commit()
-    print(f"Inserted test user with user_id: {user_id}")
-    
+    print(f"Inserted test user")
+
 finally:
     cursor.close()
     conn.close()
