@@ -23,12 +23,12 @@ from src.scraper.clean_scrapes import main as cleaner_script
 SCRAPE_PERIOD_DAYS = 7
 
 def periodic_scraper():
-    '''
-    core logic:
-        Calls src.scraper.make_scripts.main to gather ALL posted grants, then these are filtered with cleaner_script
-        This is to be plugged into the GrantGuru Grant insertion logic
-
-    '''
+    """
+    Core logic:
+        - Scrape newly posted or forecasted grants
+        - Clean and normalize them
+        - Insert into the database
+    """
 
     dirty_grant_dict = scraper_script([
         "--statuses", "forecasted", "posted"
@@ -36,7 +36,8 @@ def periodic_scraper():
     cleaned_grants = cleaner_script(dirty_grant_dict, filter_on_dates=SCRAPE_PERIOD_DAYS)
 
     #TODO: implement a helper function that calls the correct sql insertion logic for grant entities for every value in the cleaned_grants list
-    # insert_grants(cleaned)
+    #insert_grants(cleaned)
+    #log_info(f"Periodic scrape complete. Inserted {len(cleaned)} grants.")
  
 
 if __name__ == "__main__":
