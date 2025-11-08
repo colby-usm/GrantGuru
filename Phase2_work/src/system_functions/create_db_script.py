@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-    File: create_main_script.py
+    File: create_db_script.py
     Version: 8 November 2025
     Author: Colby Wirth
     Description:
