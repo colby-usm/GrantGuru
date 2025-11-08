@@ -1,6 +1,5 @@
 import os
 import mysql.connector
-import uuid
 from hashlib import sha256
 
 # DB config from environment
