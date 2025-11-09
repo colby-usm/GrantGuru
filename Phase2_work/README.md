@@ -84,7 +84,7 @@ Colby Wirth: colby-usm
   - Create a trigger for user-initiated scraping, defaulting to the user’s `research_field` attribute for keywords.
   - **Assigned**: Abdullahi
   - **Deadline**: November 5, 2025
-- **Role-Based Permissions (RBP) Infrastructure**:
+- ~~**Role-Based Permissions (RBP) Infrastructure**:~~
   - Develop infrastructure for role-based permissions, including:
     - Administrator view
     - User view
@@ -96,7 +96,7 @@ Colby Wirth: colby-usm
   - Each entity will have a dedicated Python script to trigger SQL logic (e.g., `user_crud.py`, `application_crud.py`).
   - All SQL logic will reside in a single file (e.g., `db_operations.mysql`).
 
-### User Entity CRUD
+### ~~User Entity CRUD~~
 - **Tasks**:
   - Create a script to generate sample data.
   - Implement Create, Read, Update, Delete operations.
@@ -152,6 +152,12 @@ Colby Wirth: colby-usm
 
 ## Video Presentation
 - **Tasks**:
+  - Colby:
+    1. ~~DB creation and deletion~~
+    2. User Entity implementation and test suite
+    3. Periodic scraper
+    4. RBP infrastructure
+       
   - Record a project demonstration video.
 - **Assigned**: Entire Team
 - **Deadline**: November 14, 2025
