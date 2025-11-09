@@ -2,7 +2,9 @@
       users_entity_test_suite.py
       Author: Colby Wirth
       Version: 8 November 2025
-      Description: Extensive testing suite for crud operations for Users entities
+      Description: 
+            Extensive testing suite for crud operations for Users entities
+            Generated with the assistance of AI tools
 
       Usage:
         The Database must be empty before running this script
@@ -80,7 +82,7 @@ def create_users_tests():
         "m_name": "M",
         "l_name": "Smith",
         "institution": "MIT",
-        "email": "alice@example.com",
+        "email": "alice@examplemit.com",
         "password": "pw"
     }, True, "Valid user creation")
 
@@ -90,7 +92,7 @@ def create_users_tests():
         "m_name": "M",
         "l_name": "Smith",
         "institution": "MIT",
-        "email": "alice@example.com",
+        "email": "alice@examplemit.com",
         "password": "pw"
     }, False, "Duplicate email")
 
@@ -140,7 +142,7 @@ def create_users_tests():
         "m_name": None,
         "l_name": "OptionalInstitution",
         "institution": None,
-        "email": "eve@example.com",
+        "email": "eve@ex.com",
         "password": "pw"
     }, True, "Optional institution (NULL)")
 
