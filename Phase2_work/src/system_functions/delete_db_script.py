@@ -1,32 +1,27 @@
 
 #!/usr/bin/env python3
 """
-
-
     File: delete_db_script.py
     Version: 1 November 2025
     Author: Colby Wirth
     Description:
-        - GrantGuruDB Deleter
+        - Script to delete a database based on .env variables
         - Prompts user for confirmation before deleting the DB
         - Aborts safely if DB does not exist
         - Uses .env for configuration
 """
-
 import os
 import sys
 import mysql.connector
 from mysql.connector import errorcode
 from dotenv import load_dotenv
 from  src.utils.logging_utils import log_info, log_warning, log_error
-
 # Load environment variables
 load_dotenv()
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "")
-
 
 try:
     log_info("Connecting to MySQL server...")
