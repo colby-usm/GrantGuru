@@ -4,10 +4,11 @@
 
     Version: 1 November 2025
 
-    Author: Colby Wirth - generated with ChatGPT
+    Author: Colby Wirth
  
     Description:
-        utility functions for parsing the dates in a dirty grant scrapped from Grants.gov
+        - Utility functions for parsing the dates in a dirty grant scrapped from Grants.gov
+        - Generated with the help of AI tools
 
     Usage:
         there are two main helpers called by src.scraper.clean_scrapes.py:

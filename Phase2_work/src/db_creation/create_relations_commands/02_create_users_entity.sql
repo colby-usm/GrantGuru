@@ -7,6 +7,7 @@
 
 CREATE TABLE Users (
     user_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
+    email VARCHAR(100) UNIQUE NOT NULL,
 
     -- Composite attribute: Name = (f_name, m_name, l_name)
     f_name VARCHAR(50) NOT NULL,
@@ -14,7 +15,6 @@ CREATE TABLE Users (
     l_name VARCHAR(50) NOT NULL,
 
     institution VARCHAR(50),
-    email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(100) NOT NULL
 );
 

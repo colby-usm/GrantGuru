@@ -13,14 +13,53 @@
         pass a SINGLE dictionary for an uncleaned grant to clean_a_grant() to clean the grant and normalize it for the DB
 
 """
-
-import json
-from typing import Dict, Any
+from datetime import datetime
+from typing import Dict, Any, Optional
 from src.utils.grant_cleaner_helpers import get_dates, to_non_negative_int
-from src.utils.logging_utils import log_debug, log_default, log_info, log_warning
+from src.utils.logging_utils import log_debug, log_warning
 
 
-def clean_a_grant(dirty_grant: Dict[str, Any]) -> Dict[str, Any]:
+def check_date_in_range(dirty_grant: dict, filter_on_date: int) -> bool:
+    """
+    Check if a grant's lastUpdatedDate falls within the last `filter_on_date` days.
+
+    Args:
+        dirty_grant: The raw grant dictionary.
+        filter_on_date: Number of days. Only grants updated in the last `filter_on_date` days will return True.
+
+    Returns:
+        True if the grant's lastUpdatedDate is within the last `filter_on_date` days, False otherwise.
+        If the lastUpdatedDate is missing or cannot be parsed, returns False.
+    """
+    last_updated_str = dirty_grant.get("synopsis", {}).get("lastUpdatedDate")
+
+
+    log_warning(f"last updated string: {last_updated_str}")
+
+    if last_updated_str:
+        # Example format: 'Jun 02, 2010 10:53:01 AM EDT'
+        try:
+            last_updated_dt = datetime.strptime(last_updated_str[:-4], "%b %d, %Y %I:%M:%S %p")
+            log_warning(f"last updated converted: {last_updated_dt }")
+        except ValueError:
+            # Could not parse date
+            return False
+
+        if filter_on_date is not None:
+            today_ordinal = datetime.today().toordinal()
+            last_updated_ordinal = last_updated_dt.toordinal()
+            # Return True if within the last `filter_on_date` days
+            return (today_ordinal - last_updated_ordinal) <= filter_on_date
+
+    return False
+
+
+def clean_a_grant(dirty_grant: Dict[str, Any], filter_on_date: Optional[int] = None) -> Optional[Dict[str, Any]]:
+
+    if filter_on_date:
+        if check_date_in_range(dirty_grant, filter_on_date) == False:
+            return None
+
     g: Dict[str, Any] = {}
 
     g["grant_id"] = None
@@ -61,24 +100,40 @@ def clean_a_grant(dirty_grant: Dict[str, Any]) -> Dict[str, Any]:
     return g
 
 
-def main():
+def main(scrape_dict, filter_on_dates=None):
 
-    log_debug("Running test script for clean_scrapes.py")
+    #dirty_grant_list = args[0]["grants"]
 
-    with open("runtime/grant_details_1.json", "r") as f:
-        data: Dict[str, Any] = json.load(f)
 
-    grants = data.get("grants", [])
-    if not grants:
-        log_warning("No grants found.")
-        return
+    cleaned_grants = []
+    dirty_grant_list = scrape_dict["grants"]
 
-    # Process the first grant (or loop over all grants if needed)
-    first_grant = grants[0]
-    cleaned_grant = clean_a_grant(first_grant)
+    for g in dirty_grant_list:
+        log_debug(f"Cleaning a grant")
+        cleaned_grant = clean_a_grant(g, filter_on_dates)
+        if cleaned_grant is not None:
+            cleaned_grants.append(cleaned_grant)
 
-    log_info("Cleaned Grant:")
-    log_default(json.dumps(cleaned_grant, indent=2))
 
-if __name__ == "__main__":
-    main()
+    return cleaned_grants
+
+
+    #log_debug("Running test script for clean_scrapes.py")
+
+    #with open("runtime/grant_details_1.json", "r") as f:
+    #    data: Dict[str, Any] = json.load(f)
+
+    #grants = data.get("grants", [])
+    #if not grants:
+    #    log_warning("No grants found.")
+    #    return
+
+    ## Process the first grant (or loop over all grants if needed)
+    #first_grant = grants[0]
+    #cleaned_grant = clean_a_grant(first_grant)
+
+    #log_info("Cleaned Grant:")
+    #log_default(json.dumps(cleaned_grant, indent=2))
+
+#if __name__ == "__main__":
+#    main()

@@ -7,15 +7,15 @@ Version: 1 November 2025
 Author: Colby Wirth
 
 Description:
-    Helper module for argument parsing for fetch_grant_details.py
+    Helper module for argument parsing for make_scrapes.py
 
 """
 
 import argparse
 
-def parse_args():
+def parse_args(args=None):
     """
-    Parse command-line arguments for fetch_grant_details.py.
+    Parse command-line arguments for make_scrapes.py.
     Returns an argparse.Namespace object.
     """
     parser = argparse.ArgumentParser(
@@ -76,5 +76,5 @@ def parse_args():
         default=0.5,
         help="Delay between requests in seconds (default: 0.5).",
     )
- 
-    return parser.parse_args()
+  
+    return parser.parse_args(args)
