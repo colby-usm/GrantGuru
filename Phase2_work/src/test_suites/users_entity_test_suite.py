@@ -176,6 +176,9 @@ def create_users_tests():
         "password": "pw"
     }, False, "Email uniqueness with trailing space")
 
+
+
+
     # 11. Verify UUID generated
     cursor.execute("SELECT user_id FROM Users WHERE email='alice@example.com';")
     uid = cursor.fetchone()

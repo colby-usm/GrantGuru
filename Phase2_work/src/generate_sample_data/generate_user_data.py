@@ -39,7 +39,8 @@ users_with_fields = [
     (("Bob", "J", "Jones", "Stanford", "bob@example.com", "password2"), ["Robotics"]),
     (("Carol", None, "Taylor", "Harvard", "carol@example.com", "password3"), ["Computer Vision", "NLP"]),
     (("David", "K", "Lee", "UCLA", "david@example.com", "password4"), ["Data Science"]),
-    (("Eve", None, "Miller", "Berkeley", "eve@example.com", "password5"), ["Cybersecurity", "Quantum Computing"])
+    (("Eve", None, "Miller", "Berkeley", "eve@example.com", "password5"), ["Cybersecurity", "Quantum Computing"]),
+    (("Ira", None, "Wirth", "USM", "ira@example.com", "sully2"), ["Marine Sciences", "Sully Dogs"])
 ]
 
 # Read SQL scripts

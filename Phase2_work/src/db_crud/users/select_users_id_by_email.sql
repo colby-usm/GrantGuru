@@ -14,4 +14,4 @@
 SELECT 
     BIN_TO_UUID(user_id) AS user_id
 FROM Users
-WHERE email = %(email)s;
+WHERE email = %s;
