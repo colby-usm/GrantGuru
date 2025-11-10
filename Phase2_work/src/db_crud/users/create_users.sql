@@ -1,8 +1,8 @@
 /*
   create_users.sql
   Author: Colby Wirth
-  Version: 8 November 2025
-  Description: Insert a new user
+  Version: 9 November 2025
+  Description: Insert a new user with trimmed and normalized fields
 
   Parameters:
     - f_name: First name (required)
@@ -23,10 +23,10 @@ INSERT INTO Users (
     email,
     password
 ) VALUES (
-    %(f_name)s,
-    %(m_name)s,
-    %(l_name)s,
-    %(institution)s,
-    %(email)s,
+    TRIM(%(f_name)s),
+    TRIM(%(m_name)s),
+    TRIM(%(l_name)s),
+    TRIM(%(institution)s),
+    LOWER(TRIM(%(email)s)),
     %(password)s
-)
+);
