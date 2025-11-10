@@ -16,8 +16,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 import sys
-import mysql.connector
 from mysql.connector import errorcode
+
+import mysql.connector as connector
+from mysql.connector.connection import MySQLConnection
+from mysql.connector.cursor import MySQLCursor
+
 from src.utils.logging_utils import log_info, log_error, log_default
 
 
@@ -35,6 +39,7 @@ UPDATE_SCRIPT = "src/db_crud/users/update_users_fields.sql"
 UPDATE_PW_SCRIPT = "src/db_crud/users/update_users_password.sql"
 
 cnx  = None
+
 try:
     log_info("Connecting to MySQL server...")
     cnx = mysql.connector.connect(
@@ -62,6 +67,14 @@ def create_users_tests():
         sql_script = f.read()
 
     def try_insert(user_data, expected_success=True, case_desc=""):
+
+        cnx: MySQLConnection = connector.connect(
+            host=HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASS,
+            database=DB_NAME
+        )
+        cursor: MySQLCursor = cnx.cursor()
         try:
             cursor.execute(sql_script, user_data)
             cnx.commit()

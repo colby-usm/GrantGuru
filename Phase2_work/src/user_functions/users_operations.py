@@ -6,7 +6,6 @@
         - Wraps SQL CRUD operations for User entity with their RessearchField with permissions checking
 '''
 
-from logging import log
 import os
 import sys
 import uuid
@@ -14,8 +13,9 @@ from dotenv import load_dotenv
 import mysql.connector as connector
 from mysql.connector import errorcode, Error
 
-from src.utils.logging_utils import log_info, log_error, log_default
+from src.utils.logging_utils import log_info, log_error
 from src.user_functions.view_based_operations import require_permission, Role, Entity
+from src.utils.sql_file_parsers import read_sql_helper
 
 # TODO A users entity is created outside of the RBP schema - this will be handeled in Phase 3
 # TODO we need to handle when a value such as m_name is set up None: we have a bug where overiding a value with None does not persist
@@ -30,21 +30,6 @@ CREATE_RESEARCH_FIELDS = "src/db_crud/research_fields/create_research_fields.sql
 SELECT_RESEARCH_FIELDS = "src/db_crud/research_fields/select_a_research_field_by_name.sql"
 DELETE_A_USERS_RESEARCH_FIELDS = "src/db_crud/research_fields/delete_a_users_research_fields.sql"
 
-def read_sql_helper(path: str) -> str | None:
-    """Read a SQL script from a file and return its content as a string.
-
-    Args:
-        path: Path to the SQL file.
-
-    Returns:
-        The SQL script as a string, or None if an error occurs.
-    """
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception as e:
-        log_error(f"Error reading SQL script {str}: {e}")
-        return None
 
 @require_permission('read', Entity.USERS)
 
