@@ -20,4 +20,4 @@ SELECT
     email,
     password
 FROM Users
-WHERE user_id = UUID_TO_BIN(%(user_id)s);
+WHERE user_id = UUID_TO_BIN(%s);

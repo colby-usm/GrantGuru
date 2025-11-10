@@ -1,6 +1,7 @@
 
 #!/usr/bin/env python3
 """
+    cursor.execute(delete_sql, {"user_id": user_id1})
     File: delete_db_script.py
     Version: 1 November 2025
     Author: Colby Wirth

@@ -3,7 +3,10 @@
     Version: 8 November 2025
     Author: Colby Wirth
     Description:
-        - Protects tables with role based permissions
+        - Enforces RBAC
+        - Defines Roles that can be held
+        - Permission Class holds static methdos that dedices access
+        - require_permission is a decorator function that can be attached to CRUD functions to enforce auto permission checks
         - Generated with the help of AI tools
 '''
 from enum import Enum
@@ -19,6 +22,7 @@ class Role(Enum):
 class Entity(Enum):
     """Defines the core database entities for RBAC checks."""
     USERS = "users"
+    RESEARCH_FIELDS = "research_fields"
     APPLICATION = "application"
     APPLICATION_DOCUMENTS = "application_documents"
     APPLICATION_DEADLINES = "application_deadlines"
@@ -29,7 +33,7 @@ class Permission:
     """Implements role-based permission checks for CRUD operations."""
     
     @staticmethod
-    def can_read(role: Role, entity: Entity, user_id: int, resource_owner_id: Optional[int] = None) -> bool:
+    def can_read(role: Role, entity: Entity, user_id: str, resource_owner_id: Optional[str] = None) -> bool:
         """Check if the given role can read a resource."""
         if role == Role.ADMIN:
             return True
@@ -73,6 +77,11 @@ class Permission:
             return True
         
         if role == Role.USER:
+
+            # Allow self-delete of their own user account
+            if entity == Entity.USERS:
+                return user_id == resource_owner_id
+            # Allow deleting their own applications or documents
             if entity in [Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS]:
                 return user_id == resource_owner_id
         
@@ -87,7 +96,7 @@ def require_permission(action: str, entity: Entity):
         entity: The Entity type being accessed.
     """
     def decorator(func):
-        def wrapper(role: Role, user_id: int, resource_owner_id: Optional[int] = None, *args, **kwargs):
+        def wrapper(role: Role, user_id: str, resource_owner_id: Optional[int] = None, *args, **kwargs):
             permission_check = {
                 'read': Permission.can_read,
                 'create': Permission.can_create,
