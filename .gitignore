@@ -36,6 +36,11 @@ env/
 ENV/
 env.bak/
 env_old/
+grant_env/
+__pycache__/
+*.pyc
+.env
+*.db
 
 
 # React & Node
