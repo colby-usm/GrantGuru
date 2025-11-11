@@ -24,7 +24,7 @@ from typing import Iterable, List, Optional, Union
 from enum import Enum
 
 SEARCH2_URL = "https://api.grants.gov/v1/api/search2"
-
+    
 
 class FundingCategory(Enum):
     """Grants.gov funding category codes."""
@@ -107,6 +107,7 @@ def get_grant_ids(
 
 
     # Process funding categories - convert to codes
+
     processed_codes = []
     for cat in funding_categories:
         if isinstance(cat, FundingCategory):

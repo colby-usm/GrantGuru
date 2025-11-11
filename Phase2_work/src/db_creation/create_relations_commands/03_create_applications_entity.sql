@@ -23,3 +23,4 @@ CREATE TABLE Applications (
 CREATE INDEX idx_application_status ON Applications(status);
 CREATE INDEX idx_application_user ON Applications(user_id);
 CREATE INDEX idx_application_grant ON Applications(grant_id);
+

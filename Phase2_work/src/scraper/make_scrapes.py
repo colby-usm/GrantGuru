@@ -94,12 +94,12 @@ def fetch_details(grant_id: str, verbose: bool = False) -> Optional[dict]:
         return None
 
 
-def main():
+def main(args=None):
     """
     Main function to search for grant IDs, fetch their details, and save to a JSON file.
     """
  
-    args = parse_args()
+    args = parse_args(args)
 
     # Search for grant IDs using grant_id_search module
     log_info("Searching for grants...")
@@ -127,7 +127,7 @@ def main():
     failed_ids = []
 
     for i, grant_id in enumerate(ids_to_fetch, 1):
-        log_info(f"[{i}/{len(ids_to_fetch)}] Fetching details for ID: {grant_id}")
+        log_info(f"n[{i}/{len(ids_to_fetch)}] Fetching details for ID: {grant_id}")
         details = fetch_details(grant_id, verbose=args.verbose)
         
         if details:
@@ -161,17 +161,20 @@ def main():
         },
         "grants": fetched_details
     }
+
+    return output_data
     
-    try:
-        with open(args.output, "w") as f:
-            json.dump(output_data, f, indent=2)
-        log_info(f"Successfully fetched and saved details for {len(fetched_details)} grants.")
-        if failed_ids:
-            log_warning(f"Failed to fetch {len(failed_ids)} grants (IDs saved in metadata).")
-        log_info(f"Output saved to: {args.output}")
-    except IOError as e:
-        log_error(f"Error: Could not write to output file {args.output}: {e}")
+    #try:
+    #    with open(args.output, "w") as f:
+    #        json.dump(output_data, f, indent=2)
+    #    log_info(f"Successfully fetched and saved details for {len(fetched_details)} grants.")
+    #    if failed_ids:
+    #        log_warning(f"Failed to fetch {len(failed_ids)} grants (IDs saved in metadata).")
+    #    log_info(f"Output saved to: {args.output}")
+    #except IOError as e:
+    #    log_error(f"Error: Could not write to output file {args.output}: {e}")
 
 
 if __name__ == "__main__":
-    main()
+    pass
+    log_debug(main())
