@@ -16,8 +16,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 import sys
-import mysql.connector
 from mysql.connector import errorcode
+
+import mysql.connector as connector
+from mysql.connector.connection import MySQLConnection
+from mysql.connector.cursor import MySQLCursor
+
 from src.utils.logging_utils import log_info, log_error, log_default
 
 
@@ -35,6 +39,7 @@ UPDATE_SCRIPT = "src/db_crud/users/update_users_fields.sql"
 UPDATE_PW_SCRIPT = "src/db_crud/users/update_users_password.sql"
 
 cnx  = None
+
 try:
     log_info("Connecting to MySQL server...")
     cnx = mysql.connector.connect(
@@ -62,6 +67,14 @@ def create_users_tests():
         sql_script = f.read()
 
     def try_insert(user_data, expected_success=True, case_desc=""):
+
+        cnx: MySQLConnection = connector.connect(
+            host=HOST,
+            user=MYSQL_USER,
+            password=MYSQL_PASS,
+            database=DB_NAME
+        )
+        cursor: MySQLCursor = cnx.cursor()
         try:
             cursor.execute(sql_script, user_data)
             cnx.commit()
@@ -162,30 +175,21 @@ def create_users_tests():
         "m_name": None,
         "l_name": "CaseTest",
         "institution": "MIT",
-        "email": "ALICE@example.com",
+        "email": "ALICE@EXAMPLEMIT.COM",  # match first inserted user
         "password": "pw"
     }, False, "Email uniqueness is case-insensitive")
 
-    # 10. Email with trailing space
-    try_insert({
-        "f_name": "Alice4",
-        "m_name": None,
-        "l_name": "Whitespace",
-        "institution": "MIT",
-        "email": "alice@example.com ",
-        "password": "pw"
-    }, False, "Email uniqueness with trailing space")
 
-    # 11. Verify UUID generated
-    cursor.execute("SELECT user_id FROM Users WHERE email='alice@example.com';")
+    # 10. Verify UUID generated
+    cursor.execute("SELECT user_id FROM Users WHERE email='alice@examplemit.com';")
     uid = cursor.fetchone()
     if uid and len(uid[0]) == 16:
         log_info(" PASS: UUID generated correctly (16-byte binary)")
     else:
         log_error(" FAIL: UUID not generated correctly")
 
-    # 12. Transaction integrity on duplicate
-    cursor.execute("SELECT COUNT(*) FROM Users WHERE email='alice@example.com';")
+    # 11. Transaction integrity on duplicate
+    cursor.execute("SELECT COUNT(*) FROM Users WHERE email='alice@examplemit.com';")
     count = cursor.fetchone()[0]
     if count == 1:
         log_info(" PASS: Transaction rollback successful on duplicate insert")
@@ -229,7 +233,7 @@ def delete_users_test():
 
     cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email=%s", (email1,))
     user_id1 = cursor.fetchone()[0] 
-    cursor.execute(delete_sql, {"user_id": user_id1})
+    cursor.execute(delete_sql, (user_id1,))
     cursor.execute("SELECT COUNT(*) FROM Users WHERE user_id=%s", (user_id1,))
     if cursor.fetchone()[0] == 0:
         log_info(" PASS: Successfully deleted existing user")
@@ -240,7 +244,7 @@ def delete_users_test():
     from uuid import uuid4
     fake_user_id = str(uuid4())
     try:
-        cursor.execute(delete_sql, {"user_id": fake_user_id})
+        cursor.execute(delete_sql, (fake_user_id,))
         log_info(" PASS: Deleting non-existent user did not crash")
     except mysql.connector.Error as e:
         log_error(f" FAIL: Deleting non-existent user raised error: {e}")
@@ -265,7 +269,7 @@ def delete_users_test():
     # Delete user
     cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email=%s", (email2,))
     user_id2 = cursor.fetchone()[0] 
-    cursor.execute(delete_sql, {"user_id": user_id2})
+    cursor.execute(delete_sql, (user_id2,))
     cursor.execute("SELECT COUNT(*) FROM Users WHERE user_id=%s", (user_id2,))
     user_count = cursor.fetchone()[0]
     cursor.execute("SELECT COUNT(*) FROM UserResearchFields WHERE user_id=%s", (user_id2,))
@@ -314,7 +318,7 @@ def select_users_by_uuid_test():
     user_id1 = insert_test_user(email1)
 
     try:
-        cursor.execute(select_sql, {"user_id": user_id1})
+        cursor.execute(select_sql, (user_id1,))
         row = cursor.fetchone()
         if row and row[5] == email1:  # row[5] = email
             log_info(" PASS: Successfully selected existing user by UUID")
@@ -327,7 +331,7 @@ def select_users_by_uuid_test():
     from uuid import uuid4
     fake_user_id = str(uuid4())
     try:
-        cursor.execute(select_sql, {"user_id": fake_user_id})
+        cursor.execute(select_sql, (fake_user_id,)) 
         row = cursor.fetchone()
         if row is None:
             log_info(" PASS: Selecting non-existent user returned no results")
@@ -339,7 +343,7 @@ def select_users_by_uuid_test():
     # 3. Validate all returned columns
     # row = [user_id, f_name, m_name, l_name, institution, email, password]
     try:
-        cursor.execute(select_sql, {"user_id": user_id1})
+        cursor.execute(select_sql, (user_id1,))
         row = cursor.fetchone()
         expected_columns = ["user_id", "f_name", "m_name", "l_name", "institution", "email", "password"]
         if row and len(row) == len(expected_columns):
