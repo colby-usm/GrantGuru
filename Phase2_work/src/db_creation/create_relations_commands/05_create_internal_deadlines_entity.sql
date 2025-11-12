@@ -14,3 +14,5 @@ CREATE TABLE InternalDeadlines (
 
     FOREIGN KEY (application_id) REFERENCES Applications(application_id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_deadline_date ON InternalDeadlines(deadline_date);
