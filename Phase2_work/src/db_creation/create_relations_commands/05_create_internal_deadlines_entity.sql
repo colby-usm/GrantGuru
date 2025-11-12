@@ -3,6 +3,8 @@
     Version: 4 November 2025
     Author: Mathieu Poulin
     Description: An Internal Deadlines entity and its attributes
+
+    Disclaimer: A portion of this code was generated with the assistance of AI.
 */
 
 CREATE TABLE InternalDeadlines (
