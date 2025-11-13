@@ -15,3 +15,8 @@ CREATE TABLE Documents (
 
     FOREIGN KEY (application_id) REFERENCES Applications(application_id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_upload_date ON Documents(upload_date);
+CREATE INDEX idx_document_type ON Documents(document_type);
+CREATE INDEX idx_application_upload ON Documents(application_id, upload_date);
+
