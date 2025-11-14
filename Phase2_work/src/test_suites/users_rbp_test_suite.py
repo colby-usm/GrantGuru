@@ -6,6 +6,7 @@ Description:
     Tests for high-level user operations via users_operations.py
     Includes CRUD, password/email updates, and research field associations
     All tests enforce permissions via decorators
+    Generated with the assistance of AI Tools
 """
 
 import os
