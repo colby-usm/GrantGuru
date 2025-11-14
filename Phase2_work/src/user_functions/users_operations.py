@@ -9,12 +9,11 @@
 import uuid
 from mysql.connector import Error as MySQLError
 
-from src.utils.logging_utils import log_info, log_error, log_warning
+from src.utils.logging_utils import log_info, log_error
 from src.user_functions.view_based_operations import require_permission, Role, Entity
 from src.utils.sql_file_parsers import read_sql_helper
 
 # TODO A users entity is created outside of the RBP schema - this will be handeled in Phase 3
-# TODO we need to handle when a value such as m_name is set up None: we have a bug where overiding a value with None does not persist
 
 CREATE_SCRIPT = "src/db_crud/users/create_users.sql"
 DELETE_SCRIPT = "src/db_crud/users/delete_users.sql"
@@ -152,7 +151,7 @@ def update_users_email(role: Role, user_id: str, resource_owner_id: str, cursor,
     try:
         sql_script = read_sql_helper(UPDATE_EMAIL_SCRIPT)
         cursor.execute(sql_script, params)
-        log_info(f"User {user_id} email updated successfully to {new_email}.")
+        # success
         return None
     except MySQLError as e:
         log_error(f"MySQL error executing {UPDATE_EMAIL_SCRIPT}: {e}")
@@ -231,7 +230,7 @@ def add_a_reference_to_research_field(role: Role, user_id: str, resource_owner_i
         if not row:
             raise UserOperationError(f"No research field ID found for '{research_field}'")
 
-        log_info(f"Associated research field '{research_field}' with user {user_id}")
+        # successful update
         return None
 
     except MySQLError as e:
@@ -275,11 +274,7 @@ def delete_a_reference_to_research_field(role: Role, user_id: str, resource_owne
             "research_field_id": research_field_id
         })
 
-        if cursor.rowcount == 0:
-            log_warning(f"No association found for user {user_id} and research field '{research_field}'")
-        else:
-            log_info(f"Deleted association for user {user_id} and research field '{research_field}'")
-
+        # Success or no research field is found
         return None
 
     except MySQLError as e:
