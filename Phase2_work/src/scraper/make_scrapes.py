@@ -146,7 +146,6 @@ def main(args=None):
         if i < len(ids_to_fetch):
             time.sleep(args.delay)
 
-    # Save all details to a JSON file
     output_data = {
         "metadata": {
             "total_grants_fetched": len(fetched_details),
@@ -159,7 +158,7 @@ def main(args=None):
             "total_ids_found": len(grant_ids),
             "failed_ids": failed_ids
         },
-        "grants": fetched_details
+        "grants": fetched_details # list of grants
     }
 
     return output_data

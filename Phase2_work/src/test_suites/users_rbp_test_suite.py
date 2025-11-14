@@ -1,7 +1,7 @@
 """
 users_operations_test_suite.py
 Author: Colby Wirth
-Version: 9 November 2025
+Version: 14 November 2025
 Description:
     Tests for high-level user operations via users_operations.py
     Includes CRUD, password/email updates, and research field associations
@@ -13,7 +13,8 @@ import os
 import sys
 from dotenv import load_dotenv
 import mysql.connector as connector
-from mysql.connector import errorcode, Error
+from mysql.connector import errorcode, Error as MySQLError
+
 
 from src.utils.logging_utils import log_info, log_error, log_default
 from src.user_functions.users_operations import (
@@ -23,7 +24,7 @@ from src.user_functions.users_operations import (
     update_users_email,
     delete_a_users_entity,
     add_a_reference_to_research_field,
-    delete_a_reference_to_research_field
+    delete_a_reference_to_research_field,
 )
 from src.user_functions.view_based_operations import Role
 from src.utils.sql_file_parsers import read_sql_helper
@@ -36,6 +37,10 @@ MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "")
 
 
+
+CREATE_SCRIPT = "src/db_crud/users/create_users.sql"
+
+
 def setup_db():
     try:
         cnx = connector.connect(
@@ -46,7 +51,7 @@ def setup_db():
         )
         cursor = cnx.cursor()
         return cnx, cursor
-    except Error as err:
+    except MySQLError as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             log_error(f"Access denied. Check MySQL user/password: {err}")
         else:
@@ -59,7 +64,6 @@ def insert_test_user(cursor, email="test_user@example.com", password="pw123"):
     Inserts a user via raw SQL for testing purposes.
     Returns the string UUID.
     """
-    CREATE_SCRIPT = "src/db_crud/users/create_users.sql"
     sql_script = read_sql_helper(CREATE_SCRIPT)
     if not sql_script:
         log_error("Cannot read create_users.sql")
@@ -79,16 +83,17 @@ def insert_test_user(cursor, email="test_user@example.com", password="pw123"):
 
 def test_read_users_fields_by_uuid(cursor):
     log_default("Running test_read_users_fields_by_uuid()")
-
     uid = insert_test_user(cursor, email="read_test@example.com")
-    row = read_users_fields_by_uuid(Role.USER, uid, uid, cursor)
-    if row and row[5] == "read_test@example.com":
+
+    result = read_users_fields_by_uuid(Role.USER, uid, uid, cursor)
+
+    if isinstance(result, tuple) and result[5] == "read_test@example.com":
         log_info(" PASS: read_users_fields_by_uuid returned correct row")
     else:
-        log_error(" FAIL: read_users_fields_by_uuid returned incorrect data")
+        log_error(f" FAIL: Unexpected return: {result}")
 
 
-def test_update_users_fields(cursor, cnx):
+def test_update_users_fields(cursor):
     log_default("Running test_update_users_fields()")
     uid = insert_test_user(cursor, email="update_test@example.com")
 
@@ -101,90 +106,103 @@ def test_update_users_fields(cursor, cnx):
         "email": "updated_email@example.com"
     }
 
-    if update_users_fields(Role.USER, uid, uid, cursor, new_fields):
-        cursor.execute("SELECT f_name, m_name, l_name, institution, email FROM Users WHERE user_id=UUID_TO_BIN(%s)", (uid,))
+    result = update_users_fields(Role.USER, uid, uid, cursor, new_fields)
+
+    if result is None:
+        cursor.execute("SELECT f_name, m_name, l_name, institution, email "
+                       "FROM Users WHERE user_id=UUID_TO_BIN(%s)", (uid,))
         row = cursor.fetchone()
-        expected = ("UpdatedFirst", "UpdatedMiddle", "UpdatedLast", "Updated University", "updated_email@example.com")
+        expected = (
+            "UpdatedFirst", "UpdatedMiddle", "UpdatedLast",
+            "Updated University", "updated_email@example.com"
+        )
         if row == expected:
-            log_info(" PASS: update_users_fields persisted changes correctly")
+            log_info(" PASS: update_users_fields persisted changes")
         else:
-            log_error(f" FAIL: update_users_fields changes not persisted: {row}")
+            log_error(f" FAIL: DB row mismatch: {row}")
     else:
-        log_error(" FAIL: update_users_fields returned False")
+        log_error(f" FAIL: update_users_fields returned error: {result}")
 
 
-def test_update_users_password(cursor, cnx):
+def test_update_users_password(cursor):
     log_default("Running test_update_users_password()")
     uid = insert_test_user(cursor, email="pw_test@example.com", password="old_pw")
 
     new_password = "new_pw_hash"
-    if update_users_password(Role.USER, uid, uid, cursor, new_password):
+    result = update_users_password(Role.USER, uid, uid, cursor, new_password)
+
+    if result is None:
         cursor.execute("SELECT password FROM Users WHERE user_id=UUID_TO_BIN(%s)", (uid,))
         pw = cursor.fetchone()[0]
         if pw == new_password:
-            log_info(" PASS: update_users_password changed password correctly")
+            log_info(" PASS: update_users_password updated correctly")
         else:
-            log_error(" FAIL: update_users_password did not update password")
+            log_error(f" FAIL: password not updated, got {pw}")
     else:
-        log_error(" FAIL: update_users_password returned False")
+        log_error(f" FAIL: update_users_password returned error: {result}")
 
 
-def test_update_users_email(cursor, cnx):
+def test_update_users_email(cursor):
     log_default("Running test_update_users_email()")
     uid = insert_test_user(cursor, email="old_email@example.com")
 
     new_email = "new_email@example.com"
-    if update_users_email(Role.USER, uid, uid, cursor, new_email):
+    result = update_users_email(Role.USER, uid, uid, cursor, new_email)
+
+    if result is None:
         cursor.execute("SELECT email FROM Users WHERE user_id=UUID_TO_BIN(%s)", (uid,))
         email = cursor.fetchone()[0]
         if email == new_email:
-            log_info(" PASS: update_users_email updated email correctly")
+            log_info(" PASS: update_users_email persisted new email")
         else:
-            log_error(f" FAIL: update_users_email did not persist: {email}")
+            log_error(f" FAIL: email not updated, got {email}")
     else:
-        log_error(" FAIL: update_users_email returned False")
+        log_error(f" FAIL: update_users_email returned error: {result}")
 
 
-def test_delete_a_users_entity(cursor, cnx):
+def test_delete_a_users_entity(cursor):
     log_default("Running test_delete_a_users_entity()")
     uid = insert_test_user(cursor, email="delete_test@example.com")
 
-    if delete_a_users_entity(Role.USER, uid, uid, cursor):
+    result = delete_a_users_entity(Role.USER, uid, uid, cursor)
+
+    if result is None:
         cursor.execute("SELECT COUNT(*) FROM Users WHERE user_id=UUID_TO_BIN(%s)", (uid,))
         if cursor.fetchone()[0] == 0:
-            log_info(" PASS: delete_a_users_entity removed the user")
+            log_info(" PASS: delete_a_users_entity removed user")
         else:
-            log_error(" FAIL: delete_a_users_entity did not remove user")
+            log_error(" FAIL: user still exists in DB")
     else:
-        log_error(" FAIL: delete_a_users_entity returned False")
+        log_error(f" FAIL: delete_a_users_entity returned error: {result}")
 
 
-def test_research_field_operations(cursor, cnx):
+def test_research_field_operations(cursor):
     log_default("Running test_research_field_operations()")
     uid = insert_test_user(cursor, email="research_test@example.com")
 
-    # Add research field
-    if add_a_reference_to_research_field(Role.USER, uid, uid, cursor, "AI"):
+    add_result = add_a_reference_to_research_field(Role.USER, uid, uid, cursor, "AI")
+    if add_result is None:
         log_info(" PASS: add_a_reference_to_research_field succeeded")
     else:
-        log_error(" FAIL: add_a_reference_to_research_field failed")
+        log_error(f" FAIL: add returned error: {add_result}")
 
-    # Remove research field
-    if delete_a_reference_to_research_field(Role.USER, uid, uid, cursor, "AI"):
+    del_result = delete_a_reference_to_research_field(Role.USER, uid, uid, cursor, "AI")
+    if del_result is None:
         log_info(" PASS: delete_a_reference_to_research_field succeeded")
     else:
-        log_error(" FAIL: delete_a_reference_to_research_field failed")
+        log_error(f" FAIL: delete returned error: {del_result}")
+
 
 
 if __name__ == "__main__":
     cnx, cursor = setup_db()
 
     test_read_users_fields_by_uuid(cursor)
-    test_update_users_fields(cursor, cnx)
-    test_update_users_password(cursor, cnx)
-    test_update_users_email(cursor, cnx)
-    test_delete_a_users_entity(cursor, cnx)
-    test_research_field_operations(cursor, cnx)
+    test_update_users_fields(cursor)
+    test_update_users_password(cursor)
+    test_update_users_email(cursor)
+    test_delete_a_users_entity(cursor)
+    test_research_field_operations(cursor)
 
     cnx.commit()
     cursor.close()
