@@ -33,7 +33,7 @@ class UserOperationError(Exception):
 
 
 @require_permission('read', Entity.USERS)
-def read_users_fields_by_uuid(role: Role, user_id: str, resource_owner_id: str, cursor) -> dict | UserOperationError | MySQLError:
+def read_users_fields_by_uuid(role: Role, user_id: str, resource_owner_id: str, cursor) -> tuple | UserOperationError | MySQLError:
     """
     Fetch a user's fields from the database by their UUID.
 
@@ -46,7 +46,7 @@ def read_users_fields_by_uuid(role: Role, user_id: str, resource_owner_id: str, 
         cursor: MySQL cursor object for executing queries.
 
     Returns:
-        dict on success, UserOperationError on logical failure, MySQLError on DB failure
+        tuple on success, UserOperationError on logical failure, MySQLError on DB failure
     """
 
     _ = role, resource_owner_id  # linter ignore

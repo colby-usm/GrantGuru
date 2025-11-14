@@ -39,9 +39,9 @@ class Permission:
             return True
         
         if role == Role.USER:
-            if entity in [Entity.USERS, Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS]:
+            if entity in [Entity.USERS, Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS, Entity.APPLICATION_DEADLINES]:
                 return user_id == resource_owner_id
-            if entity in [Entity.APPLICATION_DEADLINES, Entity.GRANTS]:
+            if entity in [Entity.GRANTS]:
                 return True
         
         return False
@@ -53,7 +53,7 @@ class Permission:
             return True
         
         if role == Role.USER:
-            if entity in [Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS]:
+            if entity in [Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS, Entity.APPLICATION_DEADLINES]:
                 return user_id == resource_owner_id
         
         return False
@@ -65,7 +65,7 @@ class Permission:
             return True
         
         if role == Role.USER:
-            if entity in [Entity.USERS, Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS]:
+            if entity in [Entity.USERS, Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS, Entity.APPLICATION_DEADLINES]:
                 return user_id == resource_owner_id
         
         return False
@@ -77,12 +77,8 @@ class Permission:
             return True
         
         if role == Role.USER:
-
-            # Allow self-delete of their own user account
-            if entity == Entity.USERS:
-                return user_id == resource_owner_id
             # Allow deleting their own applications or documents
-            if entity in [Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS]:
+            if entity in [Entity.USERS, Entity.APPLICATION, Entity.APPLICATION_DOCUMENTS, Entity.APPLICATION_DEADLINES]:
                 return user_id == resource_owner_id
         
         return False
