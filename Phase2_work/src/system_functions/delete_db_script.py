@@ -3,7 +3,7 @@
 """
     cursor.execute(delete_sql, {"user_id": user_id1})
     File: delete_db_script.py
-    Version: 1 November 2025
+    Version: 13 November 2025
     Author: Colby Wirth
     Description:
         - Script to delete a database based on .env variables
@@ -48,62 +48,6 @@ cnx = mysql.connector.connect(
 )
 cursor = cnx.cursor()
 
-# Users and their research fields
-users_with_fields = [
-    (("Alice", "M", "Smith", "MIT", "alice@example.com", "password1"), ["AI", "Machine Learning"]),
-    (("Bob", "J", "Jones", "Stanford", "bob@example.com", "password2"), ["Robotics"]),
-    (("Carol", None, "Taylor", "Harvard", "carol@example.com", "password3"), ["Computer Vision", "NLP"]),
-    (("David", "K", "Lee", "UCLA", "david@example.com", "password4"), ["Data Science"]),
-    (("Eve", None, "Miller", "Berkeley", "eve@example.com", "password5"), ["Cybersecurity", "Quantum Computing"])
-]
-
-# Read SQL scripts
-with open(CREATE_USER_SCRIPT, "r") as f:
-    create_user_sql = f.read()
-
-with open(CREATE_RESEARCH_SCRIPT, "r") as f:
-    create_research_sql = f.read()
-
-with open(SELECT_BY_EMAIL_SCRIPT, "r") as f:
-    select_by_email_sql = f.read()
-
-for user_info, research_fields in users_with_fields:
-    first_name, middle_name, last_name, institution, email, password = user_info
-    
-    try:
-        # 1. Insert user
-        cursor.execute(create_user_sql, {
-            "f_name": first_name,
-            "m_name": middle_name,
-            "l_name": last_name,
-            "institution": institution,
-            "email": email,
-            "password": password
-        })
-        cnx.commit()
-        log_info(f"Inserted user {email}")
-        
-        # 2. Get user ID (UUID string)
-        cursor.execute(select_by_email_sql, {"email": email})
-        user_id_result = cursor.fetchone()
-        if not user_id_result:
-            log_error(f"Failed to fetch user ID for {email}")
-            continue
-        user_id = user_id_result[0]  # This is a UUID string
-        
-        # 3. Insert research fields
-        for field in research_fields:
-            cursor.execute(create_research_sql, {
-                "user_id": user_id,
-                "research_field": field
-            })
-            cursor.fetchall()
-        cnx.commit()
-        log_info(f"Added research fields for {email}: {', '.join(research_fields)}")
-        
-    except mysql.connector.Error as e:
-        log_error(f"MySQL error for {email}: {e}")
-        cnx.rollback()
 
 # Close connection
 cursor.close()
