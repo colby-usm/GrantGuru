@@ -1,6 +1,8 @@
 import schedule
 from src.scraper.make_scrapes import main as scraper_script
 from src.scraper.clean_scrapes import main as cleaner_script
+from src.system_functions.delete_old_grants import main as deletion_script
+from src.system_functions.insert_cleaned_grant import main as insert_script
 
 '''
     File: daily_grants_maintenance.py
@@ -15,7 +17,7 @@ from src.scraper.clean_scrapes import main as cleaner_script
             4. Insert new Grants to DB
 '''
 
-SCRAPE_PERIOD_DAYS = 1
+SCRAPE_PERIOD_DAYS = 7
 from src.utils.logging_utils import log_info
 
 
@@ -23,7 +25,7 @@ def daily_operations():
 
     # 1 James' deletion logic here
     log_info("Starting daily DB cleaning...")
-    # func1()
+    deletion_script()
 
 
     # 2 scraping logic
@@ -35,16 +37,17 @@ def daily_operations():
 
     # 3 cleaning logic
     cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=100000)
-
+    print(cleaned_grants[1])
     # James, cleaned_grants is a list of grants that contain the dictionary, use "opportunity_number" to get the UUID that Grants.gov genreates
     # print(cleaned_grants[1]) <- use this to see an example
     # 4 James' DB insertion logic here
-    # func4()
+    insert_script(cleaned_grants)
+    
 
 if __name__ == "__main__":
  
 
-    schedule.every(SCRAPE_PERIOD_DAYS).days.do(daily_operations)
+    schedule.every(SCRAPE_PERIOD_DAYS).seconds.do(daily_operations)
     while True:
         schedule.run_pending()
 

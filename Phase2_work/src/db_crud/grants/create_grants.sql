@@ -25,6 +25,7 @@
 */
 
 INSERT INTO Grants (
+
     grant_title,
     description,
     research_field,
@@ -44,11 +45,11 @@ INSERT INTO Grants (
     trim(%(grant_title)s),
     trim(%(description)s),
     trim(%(research_field)s),
-    %(expected_award_count)i,
-    trim(%(eligibilty)s),
-    %(award_max_amount)i,
-    %(award_min_amount)i,
-    %(program_funding)i,
+    %(expected_award_count)s,
+    trim(%(eligibility)s),
+    %(award_max_amount)s,
+    %(award_min_amount)s,
+    %(program_funding)s,
     trim(%(provider)s),
     trim(%(link_to_source)s),
     trim(%(point_of_contact)s),
