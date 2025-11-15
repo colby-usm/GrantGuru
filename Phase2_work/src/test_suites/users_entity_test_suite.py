@@ -1,535 +1,357 @@
-'''
-      users_entity_test_suite.py
-      Author: Colby Wirth
-      Version: 8 November 2025
-      Description: 
-            Extensive testing suite for crud operations for Users entities
-            Generated with the assistance of AI tools
+"""
+    File: users_entity_test_suite.py
+    Author: Colby Wirth
+    Version: 16 November 2025
+    Description:
+        Runs CRUD tests on Users entity against:
+          1) Role.ADMIN
+          2) Role.USER as OWNER (actor == target)
+          3) Role.USER as NON-OWNER (actor != target)
+    Generated with the assistance of AI Tools
+"""
 
-      Usage:
-        The Database must be empty before running this script
-        from root: python3 -m src.tests.users_entity_test_suite
-'''
 import os
-import mysql.connector
-from pathlib import Path
-
-from dotenv import load_dotenv
 import sys
-from mysql.connector import errorcode
+from pathlib import Path
+from dotenv import load_dotenv
+import mysql.connector
+from mysql.connector import Error as MySQLError, IntegrityError
+from uuid import uuid4
 
-import mysql.connector as connector
-from mysql.connector.connection import MySQLConnection
-from mysql.connector.cursor import MySQLCursor
-
-from src.utils.logging_utils import log_info, log_error, log_default
-
+from src.utils.logging_utils import log_info, log_error
+from src.user_functions.users_operations import (
+    read_users_fields_by_uuid,
+    update_users_fields,
+    update_users_password,
+    update_users_email,
+    delete_a_users_entity,
+    add_a_reference_to_research_field,
+    delete_a_reference_to_research_field,
+)
+from src.user_functions.view_based_operations import Role
 
 load_dotenv()
+
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "")
 
-
-CREATE_SCRIPT = "src/db_crud/users/create_users.sql"
-DELETE_SCRIPT = "src/db_crud/users/delete_users.sql"
-SELECT_SCRIPT = "src/db_crud/users/select_users_by_uuid.sql"
-UPDATE_SCRIPT = "src/db_crud/users/update_users_fields.sql"
-UPDATE_PW_SCRIPT = "src/db_crud/users/update_users_password.sql"
-
-cnx  = None
-
+# DB connection
 try:
     log_info("Connecting to MySQL server...")
     cnx = mysql.connector.connect(
-        host=HOST,
-        user=MYSQL_USER,
-        password=MYSQL_PASS,
-        database=DB_NAME
+        host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME
     )
-
-    cursor = cnx.cursor()
-
+    cursor = cnx.cursor(buffered=True)
 except mysql.connector.Error as err:
-    if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-        log_error(f"Access denied. Check MySQL user and password.  Error {err.errno}")
-    else:
-        log_error(f"MySQL Error: {err}")
+    log_error(f"MySQL connection error: {err}")
     sys.exit(2)
 
 
-def create_users_tests():
-    log_default("Running create_users_tests()")
+# Test statistics
+test_stats = {"passed": 0, "failed": 0, "errors": 0}
 
-    sql_path = Path(CREATE_SCRIPT)
-    with open(sql_path, "r") as f:
-        sql_script = f.read()
 
-    def try_insert(user_data, expected_success=True, case_desc=""):
+# Utilities
+def unique_email(prefix: str = "user") -> str:
+    return f"{prefix}_{uuid4().hex[:10]}@example.test"
 
-        cnx: MySQLConnection = connector.connect(
-            host=HOST,
-            user=MYSQL_USER,
-            password=MYSQL_PASS,
-            database=DB_NAME
-        )
-        cursor: MySQLCursor = cnx.cursor()
+
+def insert_user(email: str | None = None, f_name: str = "Test", m_name=None, l_name: str = "User") -> str:
+    """
+    Insert a user using the SQL creation script. If email is None, generate a unique one.
+    Commits immediately and returns BIN_TO_UUID(user_id).
+    """
+    sql_script_path = Path("src/db_crud/users/create_users.sql")
+    sql_script = sql_script_path.read_text()
+
+    if email is None:
+        email = unique_email("user")
+
+    params = {
+        "f_name": f_name,
+        "m_name": m_name,
+        "l_name": l_name,
+        "institution": "Test University",
+        "email": email,
+        "password": "pw",
+    }
+
+    try:
+        cursor.execute(sql_script, params)
+        cnx.commit()
+    except IntegrityError as e:
+        log_error(f"IntegrityError inserting user {email}: {e}; retrying with unique email.")
+        params["email"] = unique_email("retry")
         try:
-            cursor.execute(sql_script, user_data)
+            cursor.execute(sql_script, params)
             cnx.commit()
-            if expected_success:
-                log_info(f" PASS: {case_desc}")
-            else:
-                log_error(f" FAIL: {case_desc} (expected failure, got success)")
-        except mysql.connector.Error as err:
+        except Exception as e2:
             cnx.rollback()
-            if expected_success:
-                log_error(f" FAIL: {case_desc} (unexpected error: {err})")
-            else:
-                log_info(f" PASS: {case_desc} (expected error: {err})")
-
-    # 1. Valid user
-    try_insert({
-        "f_name": "Alice",
-        "m_name": "M",
-        "l_name": "Smith",
-        "institution": "MIT",
-        "email": "alice@examplemit.com",
-        "password": "pw"
-    }, True, "Valid user creation")
-
-    # 2. Duplicate email
-    try_insert({
-        "f_name": "Alice",
-        "m_name": "M",
-        "l_name": "Smith",
-        "institution": "MIT",
-        "email": "alice@examplemit.com",
-        "password": "pw"
-    }, False, "Duplicate email")
-
-    # 3. Missing email
-    try_insert({
-        "f_name": "Bob",
-        "m_name": None,
-        "l_name": "Jones",
-        "institution": "Stanford",
-        "email": None,
-        "password": "pw"
-    }, False, "Missing email")
-
-    # 4. Missing first name
-    try_insert({
-        "f_name": None,
-        "m_name": None,
-        "l_name": "Jones",
-        "institution": "Stanford",
-        "email": "bob@example.com",
-        "password": "pw"
-    }, False, "Missing first name")
-
-    # 5. Missing last name
-    try_insert({
-        "f_name": "Bob",
-        "m_name": None,
-        "l_name": None,
-        "institution": "Stanford",
-        "email": "bob2@example.com",
-        "password": "pw"
-    }, False, "Missing last name")
-
-    # 6. Missing password
-    try_insert({
-        "f_name": "Bob",
-        "m_name": None,
-        "l_name": "Jones",
-        "institution": "Stanford",
-        "email": "bob3@example.com",
-        "password": None
-    }, False, "Missing password")
-
-    # 7. Optional institution (NULL)
-    try_insert({
-        "f_name": "Eve",
-        "m_name": None,
-        "l_name": "OptionalInstitution",
-        "institution": None,
-        "email": "eve@ex.com",
-        "password": "pw"
-    }, True, "Optional institution (NULL)")
-
-    # 8. Institution too long
-    try_insert({
-        "f_name": "Frank",
-        "m_name": None,
-        "l_name": "TooLongInstitution",
-        "institution": "A" * 60,
-        "email": "frank@example.com",
-        "password": "pw"
-    }, False, "Institution exceeds VARCHAR(50) limit")
-
-    # 9. Case-insensitive email uniqueness
-    try_insert({
-        "f_name": "Alice3",
-        "m_name": None,
-        "l_name": "CaseTest",
-        "institution": "MIT",
-        "email": "ALICE@EXAMPLEMIT.COM",  # match first inserted user
-        "password": "pw"
-    }, False, "Email uniqueness is case-insensitive")
-
-
-    # 10. Verify UUID generated
-    cursor.execute("SELECT user_id FROM Users WHERE email='alice@examplemit.com';")
-    uid = cursor.fetchone()
-    if uid and len(uid[0]) == 16:
-        log_info(" PASS: UUID generated correctly (16-byte binary)")
-    else:
-        log_error(" FAIL: UUID not generated correctly")
-
-    # 11. Transaction integrity on duplicate
-    cursor.execute("SELECT COUNT(*) FROM Users WHERE email='alice@examplemit.com';")
-    count = cursor.fetchone()[0]
-    if count == 1:
-        log_info(" PASS: Transaction rollback successful on duplicate insert")
-    else:
-        log_error(" FAIL: Duplicate insert created multiple records")
-
-
-def delete_users_test():
-    """
-    Test suite for deleting users using SQL scripts.
-
-    Tests:
-        1. Delete existing user
-        2. Delete non-existent user
-        3. Delete user with associated research fields (cascade)
-    """
-    log_default("Running delete_users_test()")
-
-
-    # Helper function to insert a test user via SQL script
-    def insert_test_user(email):
-        with open(CREATE_SCRIPT, "r") as f:
-            sql_script = f.read()
-        cursor.execute(sql_script, {
-            "f_name": "Test",
-            "m_name": None,
-            "l_name": "User",
-            "institution": "Test University",
-            "email": email,
-            "password": "hashedpass123"
-        })
-        cursor.execute("SELECT user_id FROM Users WHERE email=%s", (email,))
-        return cursor.fetchone()[0]
-
-    # 1. Delete existing user
-    email1 = "delete_test1@example.com"
-    user_id1 = insert_test_user(email1)
-
-    with open(DELETE_SCRIPT, "r") as f:
-        delete_sql = f.read()
-
-    cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email=%s", (email1,))
-    user_id1 = cursor.fetchone()[0] 
-    cursor.execute(delete_sql, (user_id1,))
-    cursor.execute("SELECT COUNT(*) FROM Users WHERE user_id=%s", (user_id1,))
-    if cursor.fetchone()[0] == 0:
-        log_info(" PASS: Successfully deleted existing user")
-    else:
-        log_error(" FAIL: Existing user was not deleted")
-
-    # 2. Delete non-existent user
-    from uuid import uuid4
-    fake_user_id = str(uuid4())
-    try:
-        cursor.execute(delete_sql, (fake_user_id,))
-        log_info(" PASS: Deleting non-existent user did not crash")
-    except mysql.connector.Error as e:
-        log_error(f" FAIL: Deleting non-existent user raised error: {e}")
-
-    # 3. Delete user with research fields
-    email2 = "delete_test2@example.com"
-    user_id2 = insert_test_user(email2)
-
-    # Add a research field directly
-    cursor.execute(
-        """
-        INSERT INTO ResearchField (research_field) VALUES (%s)
-        ON DUPLICATE KEY UPDATE research_field_id = LAST_INSERT_ID(research_field_id)
-        """,
-        ("Test Field",)
-    )
-    cursor.execute(
-        "INSERT INTO UserResearchFields (user_id, research_field_id) VALUES (%s, LAST_INSERT_ID())",
-        (user_id2,)
-    )
-
-    # Delete user
-    cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email=%s", (email2,))
-    user_id2 = cursor.fetchone()[0] 
-    cursor.execute(delete_sql, (user_id2,))
-    cursor.execute("SELECT COUNT(*) FROM Users WHERE user_id=%s", (user_id2,))
-    user_count = cursor.fetchone()[0]
-    cursor.execute("SELECT COUNT(*) FROM UserResearchFields WHERE user_id=%s", (user_id2,))
-    field_count = cursor.fetchone()[0]
-
-    if user_count == 0 and field_count == 0:
-        log_info(" PASS: Deleted user with research fields; cascade worked")
-    else:
-        log_error(" FAIL: Cascade delete did not remove all user research fields")
-
-    cnx.commit()
-
-
-def select_users_by_uuid_test():
-    """
-    Test suite for selecting users by UUID using SQL script.
-
-    Tests:
-        1. Select existing user by UUID
-        2. Attempt to select non-existent user by UUID
-        3. Validate all returned columns
-    """
-    log_default("Running select_users_by_uuid_test()")
-
-    # Helper to insert test user and return string UUID
-    def insert_test_user(email):
-        with open(CREATE_SCRIPT, "r") as f:
-            sql_script = f.read()
-        cursor.execute(sql_script, {
-            "f_name": "Test",
-            "m_name": "M",
-            "l_name": "User",
-            "institution": "Test University",
-            "email": email,
-            "password": "hashedpass123"
-        })
-        # Fetch string UUID
-        cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email=%s", (email,))
-        return cursor.fetchone()[0]
-
-    with open(SELECT_SCRIPT, "r") as f:
-        select_sql = f.read()
-
-    # 1. Select existing user
-    email1 = "select_test1@example.com"
-    user_id1 = insert_test_user(email1)
-
-    try:
-        cursor.execute(select_sql, (user_id1,))
-        row = cursor.fetchone()
-        if row and row[5] == email1:  # row[5] = email
-            log_info(" PASS: Successfully selected existing user by UUID")
-        else:
-            log_error(" FAIL: User not returned correctly")
-    except mysql.connector.Error as e:
-        log_error(f" FAIL: Selecting existing user raised error: {e}")
-
-    # 2. Select non-existent user
-    from uuid import uuid4
-    fake_user_id = str(uuid4())
-    try:
-        cursor.execute(select_sql, (fake_user_id,)) 
-        row = cursor.fetchone()
-        if row is None:
-            log_info(" PASS: Selecting non-existent user returned no results")
-        else:
-            log_error(" FAIL: Non-existent user returned a row")
-    except mysql.connector.Error as e:
-        log_error(f" FAIL: Selecting non-existent user raised error: {e}")
-
-    # 3. Validate all returned columns
-    # row = [user_id, f_name, m_name, l_name, institution, email, password]
-    try:
-        cursor.execute(select_sql, (user_id1,))
-        row = cursor.fetchone()
-        expected_columns = ["user_id", "f_name", "m_name", "l_name", "institution", "email", "password"]
-        if row and len(row) == len(expected_columns):
-            log_info(" PASS: All expected columns returned")
-        else:
-            log_error(" FAIL: Columns returned do not match expected")
-    except mysql.connector.Error as e:
-        log_error(f" FAIL: Column validation raised error: {e}")
-
-    cnx.commit()
-
-
-def update_users_test():
-    """
-    Test suite for updating users using update_users.sql
-
-    Tests:
-        1. Update allowed fields (f_name, m_name, l_name, institution, email)
-        2. Attempt to update UUID (should be ignored / fail)
-        3. Attempt to update password (should not change)
-        4. Check persistence of updates
-        5. Email uniqueness check
-    """
-    log_default("Running update_users_test()")
-
-
-    # Helper: insert test user
-    def insert_test_user(email, password="pw123"):
-        with open(CREATE_SCRIPT, "r") as f:
-            sql_script = f.read()
-        cursor.execute(sql_script, {
-            "f_name": "Update",
-            "m_name": "M",
-            "l_name": "User",
-            "institution": "Original University",
-            "email": email,
-            "password": password
-        })
-        cursor.execute("SELECT BIN_TO_UUID(user_id), password FROM Users WHERE email=%s", (email,))
-        return cursor.fetchone()  # returns (user_id_str, password)
-
-    # 1. Insert test user
-    email_orig = "update_test@example.com"
-    user_id_str, orig_password = insert_test_user(email_orig)
-
-    # 2. Update allowed fields
-    with open(UPDATE_SCRIPT, "r") as f:
-        update_sql = f.read()
-    try:
-        cursor.execute(update_sql, {
-            "user_id": user_id_str,
-            "f_name": "UpdatedFirst",
-            "m_name": "UpdatedMiddle",
-            "l_name": "UpdatedLast",
-            "institution": "Updated University",
-            "email": "updated_email@example.com"
-        })
-        cnx.commit()
-        log_info(" PASS: Updated allowed fields")
-    except mysql.connector.Error as e:
+            log_error(f"Failed to insert user after retry: {e2}")
+            raise
+    except Exception as e:
         cnx.rollback()
-        log_error(f" FAIL: Updating allowed fields raised error: {e}")
+        log_error(f"Failed to insert user: {e}")
+        raise
 
-    # 3. Verify updates persisted
-    cursor.execute("SELECT f_name, m_name, l_name, institution, email, password FROM Users WHERE user_id=UUID_TO_BIN(%s)", (user_id_str,))
+    cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email=%s", (params["email"],))
     row = cursor.fetchone()
-    expected = ("UpdatedFirst", "UpdatedMiddle", "UpdatedLast", "Updated University", "updated_email@example.com", orig_password)
-    if row == expected:
-        log_info(" PASS: Updates persisted correctly; password unchanged")
-    else:
-        log_error(f" FAIL: Updates did not persist as expected: {row}")
-
-    # 4. Attempt to update UUID (should be ignored / no effect)
-    try:
-        fake_uuid = "00000000-0000-0000-0000-000000000000"
-        cursor.execute(update_sql, {
-            "user_id": user_id_str,
-            "f_name": None,
-            "m_name": None,
-            "l_name": None,
-            "institution": None,
-            "email": None,
-            "user_id": fake_uuid  # attempt to overwrite UUID
-        })
-        cnx.commit()
-        cursor.execute("SELECT BIN_TO_UUID(user_id) FROM Users WHERE email='updated_email@example.com'")
-        uid_after = cursor.fetchone()[0]
-        if uid_after == user_id_str:
-            log_info(" PASS: UUID cannot be updated")
-        else:
-            log_error(" FAIL: UUID was changed")
-    except mysql.connector.Error as e:
-        log_error(f" FAIL: Attempting to update UUID raised error: {e}")
-
-    # 5. Attempt to update password (should not change via this script)
-    try:
-        cursor.execute(update_sql, {
-            "user_id": user_id_str,
-            "f_name": None,
-            "m_name": None,
-            "l_name": None,
-            "institution": None,
-            "email": None,
-            "password": "new_password"  # attempt to overwrite password
-        })
-        cnx.commit()
-        cursor.execute("SELECT password FROM Users WHERE user_id=UUID_TO_BIN(%s)", (user_id_str,))
-        pw_after = cursor.fetchone()[0]
-        if pw_after == orig_password:
-            log_info(" PASS: Password cannot be updated via update_users.sql")
-        else:
-            log_error(" FAIL: Password changed unexpectedly")
-    except mysql.connector.Error as e:
-        log_error(f" FAIL: Attempting to update password raised error: {e}")
+    if not row:
+        raise RuntimeError("Inserted user not found after insert.")
+    return row[0]
 
 
-def update_users_password_test():
+def assert_result(role: Role, expected_ok: bool, description: str, callable_fn):
     """
-    Test suite for updating user passwords using update_users_password.sql
-
-    Tests:
-        1. Update password for existing user
-        2. Verify other fields are unchanged
-        3. Attempt to update non-existent user
+    Runs callable_fn() and interprets the result according to expected_ok.
+    callable_fn must be a zero-arg callable which may raise PermissionError.
+    Returns tuple of (success: bool, result_description: str).
     """
-    log_default("Running update_users_password_test()")
-
-
-    # Helper: insert a test user
-    def insert_test_user(email, password="original_pw"):
-        with open(CREATE_SCRIPT, "r") as f:
-            sql_script = f.read()
-        cursor.execute(sql_script, {
-            "f_name": "Password",
-            "m_name": None,
-            "l_name": "Tester",
-            "institution": "Test University",
-            "email": email,
-            "password": password
-        })
-        cursor.execute("SELECT BIN_TO_UUID(user_id), f_name, l_name, institution, email FROM Users WHERE email=%s", (email,))
-        return cursor.fetchone()  # returns (user_id, f_name, l_name, institution, email)
-
-    # 1. Insert test user
-    email_orig = "pw_test@example.com"
-    user_id, f_name_orig, l_name_orig, institution_orig, email_orig = insert_test_user(email_orig)
-    old_password = "original_pw"
-
-    # 2. Update password
-    new_password = "new_hashed_pw"
-    with open(UPDATE_PW_SCRIPT, "r") as f:
-        update_pw_sql = f.read()
     try:
-        cursor.execute(update_pw_sql, {"user_id": user_id, "password": new_password})
-        cnx.commit()
-        log_info(" PASS: Password update executed without error")
-    except mysql.connector.Error as e:
-        cnx.rollback()
-        log_error(f" FAIL: Updating password raised error: {e}")
+        result = callable_fn()
 
-    # 3. Verify password updated and other fields unchanged
-    cursor.execute(
-        "SELECT password, f_name, l_name, institution, email FROM Users WHERE user_id=UUID_TO_BIN(%s)",
-        (user_id,)
-    )
-    row = cursor.fetchone()
-    pw, f_name, l_name, institution, email = row
-    if pw == new_password and f_name == f_name_orig and l_name == l_name_orig and institution == institution_orig and email == email_orig:
-        log_info(" PASS: Password updated correctly; other fields unchanged")
-    else:
-        log_error(f" FAIL: Password update check failed: {row}")
+        # Determine result type description
+        if result is None:
+            result_desc = "None"
+        elif isinstance(result, tuple):
+            result_desc = f"tuple (len={len(result)})"
+        elif isinstance(result, MySQLError):
+            result_desc = f"MySQLError: {type(result).__name__}"
+        elif isinstance(result, Exception):
+            result_desc = f"Error: {type(result).__name__}"
+        else:
+            result_desc = f"{type(result).__name__}"
 
-    # 4. Attempt to update a non-existent user
-    from uuid import uuid4
-    fake_user_id = str(uuid4())
+        # Check return value for operations that should return None on success
+        if expected_ok and result not in (None, tuple):
+            if isinstance(result, (MySQLError, Exception)):
+                log_error(f"FAIL [{role.name}]: {description} - returned error: {result}")
+                test_stats["failed"] += 1
+                return False, result_desc
+
+        if expected_ok:
+            test_stats["passed"] += 1
+            return True, result_desc
+        else:
+            log_error(f"FAIL [{role.name}]: {description} - expected PermissionError")
+            test_stats["failed"] += 1
+            return False, result_desc
+
+    except PermissionError as e:
+        result_desc = "PermissionError"
+        if expected_ok:
+            log_error(f"FAIL [{role.name}]: {description} - unexpected PermissionError")
+            test_stats["failed"] += 1
+            return False, result_desc
+        else:
+            test_stats["passed"] += 1
+            return True, result_desc
+    except MySQLError as e:
+        result_desc = f"MySQLError: {type(e).__name__}"
+        log_error(f"ERROR [{role.name}]: {description} - MySQL error: {e}")
+        test_stats["errors"] += 1
+        return False, result_desc
+    except Exception as e:
+        result_desc = f"Exception: {type(e).__name__}"
+        log_error(f"ERROR [{role.name}]: {description} - {e}")
+        test_stats["errors"] += 1
+        return False, result_desc
+
+
+# Test implementations
+def test_read_user(role: Role, actor_id: str, target_id: str):
+    """Test reading a user's fields."""
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+
+    def read_fn():
+        return read_users_fields_by_uuid(role, actor_id, target_id, cursor)
+
+    success, result_desc = assert_result(role, expected_ok, "Read user fields", read_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+def test_update_fields(role: Role, actor_id: str, target_id: str):
+    """Test updating user fields."""
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+
+    def update_fn():
+        return update_users_fields(
+            role,
+            actor_id,
+            target_id,
+            cursor,
+            {
+                "user_id": target_id,
+                "f_name": f"Updated_{uuid4().hex[:6]}",
+                "m_name": "Test",
+                "l_name": "User",
+                "institution": "Updated University",
+                "email": unique_email("updated"),
+            },
+        )
+
+    success, result_desc = assert_result(role, expected_ok, "Update user fields", update_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+def test_update_password(role: Role, actor_id: str, target_id: str):
+    """Test updating user password."""
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+
+    def update_fn():
+        return update_users_password(role, actor_id, target_id, cursor, f"new_pw_{uuid4().hex[:8]}")
+
+    success, result_desc = assert_result(role, expected_ok, "Update password", update_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+def test_update_email(role: Role, actor_id: str, target_id: str):
+    """Test updating user email."""
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+
+    def update_fn():
+        return update_users_email(role, actor_id, target_id, cursor, unique_email("newemail"))
+
+    success, result_desc = assert_result(role, expected_ok, "Update email", update_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+def test_delete_user(role: Role, actor_id: str, target_id: str):
+    """Test deleting a user."""
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+
+    def delete_fn():
+        return delete_a_users_entity(role, actor_id, target_id, cursor)
+
+    success, result_desc = assert_result(role, expected_ok, "Delete user", delete_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+def test_add_research_field(role: Role, actor_id: str, target_id: str):
+    """Test adding a research field."""
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+    field_name = f"Field_{uuid4().hex[:8]}"
+
+    def add_fn():
+        return add_a_reference_to_research_field(role, actor_id, target_id, cursor, field_name)
+
+    success, result_desc = assert_result(role, expected_ok, f"Add research field", add_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+def test_delete_research_field(role: Role, actor_id: str, target_id: str):
+    """Test deleting a research field."""
+    field_name = f"Field_{uuid4().hex[:8]}"
     try:
-        cursor.execute(update_pw_sql, {"user_id": fake_user_id, "password": "pw_fake"})
+        add_a_reference_to_research_field(Role.ADMIN, target_id, target_id, cursor, field_name)
         cnx.commit()
-        log_info(" PASS: Updating non-existent user did not crash")
-    except mysql.connector.Error as e:
-        cnx.rollback()
-        log_error(f" FAIL: Updating non-existent user raised error: {e}")
+    except Exception as e:
+        log_error(f"Pre-test: Failed to add research field: {e}")
+        test_stats["errors"] += 1
+        return False, f"Exception: {type(e).__name__}"
+
+    expected_ok = (role == Role.ADMIN) or (actor_id == target_id)
+
+    def delete_fn():
+        return delete_a_reference_to_research_field(role, actor_id, target_id, cursor, field_name)
+
+    success, result_desc = assert_result(role, expected_ok, f"Delete research field", delete_fn)
+    cnx.commit()
+    return success, result_desc
+
+
+# Test runners
+def run_test_as_admin(test_func, test_name: str):
+    """Run a test as ADMIN (should always succeed)."""
+    admin_user = insert_user(unique_email("admin"), f_name="Admin", l_name="User")
+    target_user = insert_user(unique_email("target"), f_name="Target", l_name="User")
+    success, result_desc = test_func(Role.ADMIN, admin_user, target_user)
+
+    if success:
+        log_info(f"{test_name}: Admin success - returned {result_desc}")
+
+    return success
+
+
+def run_test_as_owner(test_func, test_name: str):
+    """Run a test as USER on their own resource (should succeed)."""
+    owner_user = insert_user(unique_email("owner"), f_name="Owner", l_name="User")
+    success, result_desc = test_func(Role.USER, owner_user, owner_user)
+
+    if success:
+        log_info(f"{test_name}: Owner success - returned {result_desc}")
+
+    return success
+
+
+def run_test_as_non_owner(test_func, test_name: str):
+    """Run a test as USER on someone else's resource (should fail)."""
+    actor_user = insert_user(unique_email("actor"), f_name="Actor", l_name="User")
+    target_user = insert_user(unique_email("target"), f_name="Target", l_name="User")
+    success, result_desc = test_func(Role.USER, actor_user, target_user)
+
+    if success:
+        log_info(f"{test_name}: Non-Owner success - returned {result_desc}")
+
+    return success
+
+
+def run_full_test(test_func, test_name: str):
+    """Run a test in all three contexts: ADMIN, OWNER, NON-OWNER."""
+    admin_ok = run_test_as_admin(test_func, test_name)
+    owner_ok = run_test_as_owner(test_func, test_name)
+    non_owner_ok = run_test_as_non_owner(test_func, test_name)
+
+    return admin_ok and owner_ok and non_owner_ok
+
+
+# MAIN
 if __name__ == "__main__":
-    create_users_tests()
-    delete_users_test()
-    select_users_by_uuid_test()
-    update_users_test()
-    update_users_password_test()
+    log_info("Starting User Entity RBAC Test Suite")
 
+    try:
+        # Run all tests
+        run_full_test(test_read_user, "READ USER")
+        run_full_test(test_update_fields, "UPDATE FIELDS")
+        run_full_test(test_update_password, "UPDATE PASSWORD")
+        run_full_test(test_update_email, "UPDATE EMAIL")
+        run_full_test(test_add_research_field, "ADD RESEARCH FIELD")
+        run_full_test(test_delete_research_field, "DELETE RESEARCH FIELD")
+        run_full_test(test_delete_user, "DELETE USER")
+
+        # Print summary
+        log_info(f"Passed: {test_stats['passed']}")
+        if test_stats['failed'] > 0:
+            log_error(f"Failed: {test_stats['failed']}")
+        if test_stats['errors'] > 0:
+            log_error(f"Errors: {test_stats['errors']}")
+
+        total = sum(test_stats.values())
+        log_info(f"Total: {total}")
+ 
+        if test_stats['failed'] == 0 and test_stats['errors'] == 0:
+            log_info("All tests passed")
+ 
+    except Exception as e:
+        log_error(f"Fatal error in test runner: {e}")
+        import traceback
+        traceback.print_exc()
+        try:
+            cnx.rollback()
+        except Exception:
+            pass
+        raise
+    finally:
+        try:
+            cursor.close()
+            cnx.close()
+        except Exception:
+            pass

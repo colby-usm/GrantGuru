@@ -22,7 +22,7 @@ DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "")
-
+print(DB_NAME + " " + HOST + " " + MYSQL_USER + " " + MYSQL_PASS)
 
 BUILD_FILES=[
     "src/db_creation/create_relations_commands/01_create_grants_entity.sql",
