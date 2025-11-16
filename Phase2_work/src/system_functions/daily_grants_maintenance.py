@@ -36,8 +36,8 @@ def daily_operations():
     ])
 
     # 3 cleaning logic
-    cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=730) # <- TODO fix this logic - we 
-    
+    cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=730) # <- TODO fix this logic - we
+
     # James, cleaned_grants is a list of grants that contain the dictionary, use "opportunity_number" to get the UUID that Grants.gov genreates
     # print(cleaned_grants[1]) <- use this to see an example
     # 4 James' DB insertion logic here
