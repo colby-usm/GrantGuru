@@ -37,5 +37,5 @@ INSERT INTO Documents (
     TRIM(%(document_type)s),
     %(document_size)s,
     %(upload_date)s,
-    %(application_id)s
+    UUID_TO_BIN(%(application_id)s)
 );
