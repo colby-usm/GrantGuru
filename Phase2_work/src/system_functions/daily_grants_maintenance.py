@@ -11,36 +11,28 @@ from src.system_functions.insert_cleaned_grant import main as insert_script
 
     Description:
         - Runs on daily intervals:
-            1. Clean unreferenced Grants that are past "archieved date" from the Database
-            2. Runs the daily_scraper() function which scrapes all new grants from Grants.gv
-            3. Cleans the retrieved Grants
-            4. Insert new Grants to DB
+            1. Runs deletion_script() to remove unreferenced Grants that are past "archieved date" from the Database
+            2. Runs scraper_script() function which scrapes all new grants from Grants.gv
+            3. Runs cleaner_script() to filter and clean grants that have been posted in the last SCRAPE_PERIOD_DAYS
+            4. Runs insert_script() to insert all new Grants to DB
 '''
 
-SCRAPE_PERIOD_DAYS = 7
+SCRAPE_PERIOD_DAYS = 1
 from src.utils.logging_utils import log_info
 
 
 def daily_operations():
 
-    # 1 James' deletion logic here
     log_info("Starting daily DB cleaning...")
-    deletion_script()
 
-
-    # 2 scraping logic
+    deletion_script() 
 
     log_info("Starting daily scraper scheduler...")
     dirty_grant_dict = scraper_script([
-        "--statuses", "forecasted", "posted", "-n", "5" # <- TODO delete "n", "5" to get all scripts made
+        "--statuses", "forecasted", "posted" # we can add other filtrs here
     ])
 
-    # 3 cleaning logic
-    cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=730) # <- TODO fix this logic - we
-
-    # James, cleaned_grants is a list of grants that contain the dictionary, use "opportunity_number" to get the UUID that Grants.gov genreates
-    # print(cleaned_grants[1]) <- use this to see an example
-    # 4 James' DB insertion logic here
+    cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=SCRAPE_PERIOD_DAYS)
     insert_script(cleaned_grants)
     
 
