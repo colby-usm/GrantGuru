@@ -1,11 +1,10 @@
 /*
-  select_grants_open.sql
+  select_all_grants.sql
   Author: James Tedder
   Version: 15 November 2025
-  Description: Select the grants that are open
-
+  Description: returns all grants in the database
   Returns:
-    All of the grants that are open
+    All of the grants 
 */
 
 SELECT BIN_TO_UUID(grant_id) as grant_id,
@@ -25,5 +24,4 @@ SELECT BIN_TO_UUID(grant_id) as grant_id,
     archive_date,
     date_closed,
     last_update_date
-FROM Grants as g
-WHERE g.date_closed < CURDATE()
+FROM Grants

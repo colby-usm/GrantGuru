@@ -8,6 +8,8 @@
 create table Grants (
     grant_id BINARY(16) PRIMARY KEY DEFAULT (UUID_TO_BIN(UUID())),
     grant_title varchar(255),
+    -- Need to check opportunity_number constraints on grants.gov but can't right now because it is down for maintenance
+    opportunity_number varchar(250) NOT NULL UNIQUE, 
     description TEXT,
     research_field varchar(250),
     expected_award_count int CHECK (expected_award_count >= 0),
@@ -23,3 +25,5 @@ create table Grants (
     date_closed date,
     last_update_date date
 );
+
+CREATE INDEX idx_grants_research_field ON Grants (research_field);

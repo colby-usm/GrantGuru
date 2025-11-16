@@ -8,15 +8,16 @@
     - research field: The research field of the grant (required)
 
   Returns:
-    All columns of the Grants table for the given grant_id
+    All columns of the Grants table for every instance with the research field
 */
 
 SELECT BIN_TO_UUID(grant_id) as grant_id,
     grant_title,
+    opportunity_number,
     description,
     research_field,
     expected_award_count,
-    eligibilty,
+    eligibility,
     award_max_amount,
     award_min_amount,
     program_funding,

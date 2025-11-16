@@ -6,6 +6,7 @@
 
   Parameters:
     - grant_title: The title of the grant (optional)
+    - opportunity_number: The number used on grants.gov to identify the grant (required)
     - description: Detailed description of the grant (optional)
     - research_field: The research field of the grant (optional)
     - expected_award_count: The number of awards expected to be issued (optional)
@@ -26,13 +27,14 @@
 UPDATE Grants 
     SET
         grant_title = COALESCE(%(grant_title)s, grant_title),
+        opportunity_number = COALESCE(%(opportunity_number)s, opportunity_number),
         description = COALESCE(%(description)s, description),
         research_field = COALESCE(%(research_field)s, research_field),
-        expected_award_count = COALESCE(%(expected_award_count)i, expected_award_count),
-        eligibilty = COALESCE(%(eligibilty)s, eligibilty),
-        award_max_amount = COALESCE(%(award_max_amount)i, award_max_amount),
-        award_min_amount = COALESCE(%(award_min_amount)i, award_min_amount),
-        program_funding = COALESCE(%(program_funding)i, program_funding),
+        expected_award_count = COALESCE(%(expected_award_count)s, expected_award_count),
+        eligibility = COALESCE(%(eligibility)s, eligibility),
+        award_max_amount = COALESCE(%(award_max_amount)s, award_max_amount),
+        award_min_amount = COALESCE(%(award_min_amount)s, award_min_amount),
+        program_funding = COALESCE(%(program_funding)s, program_funding),
         provider = COALESCE(%(provider)s, provider),
         link_to_source COALESCE(%(link_to_source)s, link_to_source),
         point_of_contact = COALESCE(%(point_of_contact)s, point_of_contact),

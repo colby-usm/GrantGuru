@@ -37,7 +37,7 @@ def daily_operations():
 
     # 3 cleaning logic
     cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=100000)
-    print(cleaned_grants[1])
+    
     # James, cleaned_grants is a list of grants that contain the dictionary, use "opportunity_number" to get the UUID that Grants.gov genreates
     # print(cleaned_grants[1]) <- use this to see an example
     # 4 James' DB insertion logic here
@@ -47,7 +47,7 @@ def daily_operations():
 if __name__ == "__main__":
  
 
-    schedule.every(SCRAPE_PERIOD_DAYS).seconds.do(daily_operations)
+    schedule.every(SCRAPE_PERIOD_DAYS).days.do(daily_operations)
     while True:
         schedule.run_pending()
 

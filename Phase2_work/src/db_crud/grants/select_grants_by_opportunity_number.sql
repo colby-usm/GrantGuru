@@ -1,11 +1,12 @@
 /*
-  select_grants_open.sql
+  select_grants_by_opportunity_number.sql
   Author: James Tedder
   Version: 15 November 2025
-  Description: Select the grants that are open
+  Description: Select the grants that have the opportunity number specified.
+  This is used to determine if the grant is already in the database.
 
   Returns:
-    All of the grants that are open
+    All of the grants that have the opportunity number
 */
 
 SELECT BIN_TO_UUID(grant_id) as grant_id,
@@ -26,4 +27,4 @@ SELECT BIN_TO_UUID(grant_id) as grant_id,
     date_closed,
     last_update_date
 FROM Grants as g
-WHERE g.date_closed < CURDATE()
+WHERE g.opportunity_number = %s;
