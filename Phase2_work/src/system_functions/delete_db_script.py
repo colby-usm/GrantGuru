@@ -1,9 +1,7 @@
-
 #!/usr/bin/env python3
 """
-    cursor.execute(delete_sql, {"user_id": user_id1})
     File: delete_db_script.py
-    Version: 13 November 2025
+    Version: 14 November 2025
     Author: Colby Wirth
     Description:
         - Script to delete a database based on .env variables
@@ -56,7 +54,6 @@ MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "")
 
 try:
-    log_info("Connecting to MySQL server...")
     conn = mysql.connector.connect(
         host=HOST,
         user=MYSQL_USER,
@@ -65,7 +62,6 @@ try:
 
     with conn.cursor() as cursor:
         # Check if DB exists
-        log_info(f"Checking if database '{DB_NAME}' exists...")
         cursor.execute("SHOW DATABASES LIKE %s;", (DB_NAME,))
         if not cursor.fetchone():
             log_warning(f"Database '{DB_NAME}' does not exist. Nothing to delete.")
@@ -80,7 +76,6 @@ try:
             sys.exit(1)
 
         # Drop the database
-        log_info(f"Dropping database '{DB_NAME}'...")
         cursor.execute(f"DROP DATABASE `{DB_NAME}`;")
         conn.commit()
 

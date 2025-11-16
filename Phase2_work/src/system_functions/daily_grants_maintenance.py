@@ -32,11 +32,11 @@ def daily_operations():
 
     log_info("Starting daily scraper scheduler...")
     dirty_grant_dict = scraper_script([
-        "--statuses", "forecasted", "posted", "-n", "5"
+        "--statuses", "forecasted", "posted", "-n", "5" # <- TODO delete "n", "5" to get all scripts made
     ])
 
     # 3 cleaning logic
-    cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=100000)
+    cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=730) # <- TODO fix this logic - we 
     
     # James, cleaned_grants is a list of grants that contain the dictionary, use "opportunity_number" to get the UUID that Grants.gov genreates
     # print(cleaned_grants[1]) <- use this to see an example
