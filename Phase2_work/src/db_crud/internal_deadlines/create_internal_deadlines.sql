@@ -27,5 +27,5 @@ INSERT INTO InternalDeadlines (
 ) VALUES (
     TRIM(%(deadline_name)s),
     %(deadline_date)s,
-    %(application_id)s
+    UUID_TO_BIN(%(application_id)s)
 );

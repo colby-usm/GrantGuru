@@ -10,8 +10,8 @@ Insert Into Applications (
     status,
     application_date
 ) VALUES (
-    %(user_id)s,
-    %(grant_id)s,
+    UUID_TO_BIN(%(user_id)s),
+    UUID_TO_BIN(%(grant_id)s),
     TRIM(%(status)s),
     %(application_date)s
 )

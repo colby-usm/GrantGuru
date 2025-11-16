@@ -30,7 +30,7 @@ INSERT INTO Grants (
     description,
     research_field,
     expected_award_count,
-    eligibilty,
+    eligibility,
     award_max_amount,
     award_min_amount,
     program_funding,
