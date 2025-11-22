@@ -44,6 +44,7 @@ cnx = mysql.connector.connect(
     password=MYSQL_PASS,
     database=DB_NAME,
 )
+
 cursor = cnx.cursor()
 
 
