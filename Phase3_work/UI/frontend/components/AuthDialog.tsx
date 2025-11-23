@@ -1,3 +1,4 @@
+// AuthDialog.tsx
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -7,6 +8,7 @@ import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Award } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 
 const API_BASE_URL = "http://127.0.0.1:5000"; 
@@ -18,6 +20,7 @@ interface AuthDialogProps {
 }
 
 export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDialogProps) {
+  const navigate = useNavigate(); // ADD THIS LINE
   const [activeTab, setActiveTab] = useState(defaultTab);
  
   // Login form state
@@ -40,45 +43,45 @@ export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDia
   });
 
 
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  console.log("Login payload:", loginData);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Login payload:", loginData);
 
-  const payload = {
-    email: loginData.email,
-    password: loginData.password
+    const payload = {
+      email: loginData.email,
+      password: loginData.password
+    };
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/signin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert("Login failed: " + data.error);
+        return;
+      }
+
+      console.log("Login successful, user_id:", data.user_id);
+      
+      if (loginData.rememberMe) {
+        localStorage.setItem("user_id", data.user_id);
+      }
+
+      alert("Login successful!");
+      
+      onOpenChange(false); // Close the dialog
+      navigate("/homepage");
+      
+    } catch (err) {
+      console.error("Network or server error during login:", err);
+      alert("Network error. Please try again.");
+    }
   };
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/signin`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert("Login failed: " + data.error);
-      return;
-    }
-
-    console.log("Login successful, user_id:", data.user_id);
-    
-    // Optionally store user info in localStorage if "remember me" checked
-    if (loginData.rememberMe) {
-      localStorage.setItem("user_id", data.user_id);
-    }
-
-    alert("Login successful!");
-    
-    // TODO: Redirect to dashboard or main app page
-  } catch (err) {
-    console.error("Network or server error during login:", err);
-    alert("Network error. Please try again.");
-  }
-};
-
 
 const handleSignup = async (e: React.FormEvent) => {
   e.preventDefault();
