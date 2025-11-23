@@ -25,8 +25,8 @@
 */
 
 INSERT INTO Grants (
-
     grant_title,
+    opportunity_number,
     description,
     research_field,
     expected_award_count,
@@ -43,6 +43,7 @@ INSERT INTO Grants (
     last_update_date
 ) VALUES (
     trim(%(grant_title)s),
+    trim(%(opportunity_number)s),
     trim(%(description)s),
     trim(%(research_field)s),
     %(expected_award_count)s,

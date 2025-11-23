@@ -2,19 +2,20 @@
     File: delete_old_grants.py
     Version: 15 November 2025
     Author: James Tedder
-    Description:
+
+    Made with the help of Gemini
+
+    Description: Deletes the grants from the database that are 
+    past their archive date and have no applications associated with them.
 
 """
-import uuid
 from mysql.connector import Error as MySQLError
 import os
 from dotenv import load_dotenv
 import sys
 import mysql.connector
-from mysql.connector import errorcode
 from src.utils.logging_utils import log_info, log_error
 from src.utils.sql_file_parsers import read_sql_helper
-from typing import List, Tuple, Any
 
 class DeletionOperationError(Exception):
     """Custom exception for deletion operation failures."""
@@ -28,10 +29,11 @@ def main ():
     MYSQL_PASS = os.getenv("GG_PASS", "")
 
     DELETE_GRANT_SCRIPT = "src/db_crud/grants/delete_grants.sql"
-    SELECT_OLD_GRANT_SCRIPT = "src/db_crud/grants/select_grants_archived_no_appplications.sql"
+    SELECT_OLD_GRANT_SCRIPT = "src/db_crud/grants/select_grants_archived_no_applications.sql"
 
     log_info("Connecting to MySQL server...")
     cnx = mysql.connector.connect(
+        database=DB_NAME,
         host=HOST,
         user=MYSQL_USER,
         password=MYSQL_PASS

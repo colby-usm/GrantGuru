@@ -3,9 +3,13 @@
     Version: 15 November 2025
     Author: James Tedder
 
-    Made with the help of Gemini
+    Made with the help of Gemini. The format grant data was done by the AI.
 
-    Description:
+    Description: Inserts the cleaned grants into the database. Either as a new
+    grant or updating the existing grant already in the database if it has the 
+    same opportunity_number. 
+
+    Usage: takes a cleaned list of dictionaries and adds them to the grants relation
 
 """
 
@@ -15,7 +19,6 @@ from typing import Dict, Any
 import os
 import sys
 import json
-from typing import Dict, Any, Union
 from dotenv import load_dotenv
 
 import mysql.connector
@@ -41,7 +44,6 @@ def format_grant_data_for_insert(raw_data: Dict[str, Any]) -> Dict[str, Any]:
     params['point_of_contact'] = json.dumps(poc_dict)
 
     params.pop('grant_id', None)
-    params.pop('opportunity_number', None) 
 
     return params
 
@@ -56,7 +58,9 @@ def main (cleaned_grants: list):
     MYSQL_USER = os.getenv("GG_USER", "root")
     MYSQL_PASS = os.getenv("GG_PASS", "")
 
-    INSERT_GRANT_SCRIPT = "src/db_crud/create_grants.sql"
+    INSERT_GRANT_SCRIPT = "src/db_crud/grants/create_grants.sql"
+    CHECK_IF_ALREADY_IN_DB_SCRIPT = "src/db_crud/grants/select_grants_by_opportunity_number.sql"
+    UPDATE_GRANT_SCRIPT = "src/db_crud/grants/update_grants_by_opportunity_number.sql"
 
     cnx = None
     cursor = None
@@ -80,25 +84,42 @@ def main (cleaned_grants: list):
         
         if sql_insert is None:
             raise GrantOperationError(f"SQL script file not found: {INSERT_GRANT_SCRIPT}")
-            
+        
+        log_info(f"Loading selection script from {CHECK_IF_ALREADY_IN_DB_SCRIPT}...")
+        sql_select = read_sql_helper(CHECK_IF_ALREADY_IN_DB_SCRIPT)
+
+        if sql_select is None:
+            raise GrantOperationError(f"SQL script file not found: {CHECK_IF_ALREADY_IN_DB_SCRIPT}")
+        
+        log_info(f"Loading update script from {UPDATE_GRANT_SCRIPT}...")
+        sql_update = read_sql_helper(UPDATE_GRANT_SCRIPT)
+        
+        if sql_update is None:
+            raise GrantOperationError(f"SQL script file not found: {UPDATE_GRANT_SCRIPT}")
+        
         # --- 3. EXECUTE INSERTION ---
         log_info("Executing grant insertion...")
         
         # Executes the query using the formatted dictionary for parameterized insertion
         for grants in cleaned_grants:
             formatted_params = format_grant_data_for_insert(grants)
-            cursor.execute(sql_insert, formatted_params) 
-            # Check if the insertion was successful (1 row inserted)
-            if cursor.rowcount == 1:
-                successful_insertions += 1
+            
+            opportunity_id = (formatted_params["opportunity_number"],)
+
+            cursor.execute(sql_select, opportunity_id)
+            grant = cursor.fetchone()
+            # If the grant is already in the database it will update it with the new information.
+            if grant == None:
+                cursor.execute(sql_insert, formatted_params) 
+                log_info("Grant inserted")
             else:
-                log_error(f"Insertion of Grant #{i+1} failed (0 rows affected). Rolling back batch.")
-                raise GrantOperationError(f"Failed to insert grant at index {i}. Stopping batch.")
+                cursor.execute(sql_update, formatted_params)
+                log_info("Grant updated")
             
         
-        log_info(f"All {successful_insertions} grants inserted into transaction cache. Committing...")
+        log_info(f"All grants inserted into transaction cache. Committing...")
         cnx.commit()
-        log_info(f"Batch insertion successful. Total grants committed: {successful_insertions}")
+        log_info(f"Batch insertion successful.")
 
         
 

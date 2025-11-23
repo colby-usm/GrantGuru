@@ -14,10 +14,11 @@
 SELECT
     BIN_TO_UUID(grant_id) as grant_id,
     grant_title,
+    opportunity_number,
     description,
     research_field,
     expected_award_count,
-    eligibilty,
+    eligibility,
     award_max_amount,
     award_min_amount,
     program_funding,
