@@ -66,14 +66,10 @@ export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDia
         return;
       }
 
-      console.log("Login successful, user_id:", data.user_id);
-      
       if (loginData.rememberMe) {
         localStorage.setItem("user_id", data.user_id);
       }
 
-      alert("Login successful!");
-      
       onOpenChange(false); // Close the dialog
       navigate("/homepage");
       

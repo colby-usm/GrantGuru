@@ -1,162 +1,172 @@
-// UserPage.tsx
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from './ThemeToggle';
 
-const API_BASE_URL = "http://127.0.0.1:5000";
-
-export function UserPage() {
-  // Form states
+export default function SettingsPage() {
+  const navigate = useNavigate();
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    organization: "",
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    organization: ''
   });
 
   const [emailInfo, setEmailInfo] = useState({
-    email: "",
+    email: ''
   });
 
   const [passwordInfo, setPasswordInfo] = useState({
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
-  // Handlers
-  const handlePersonalInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPersonalInfo({ ...personalInfo, [e.target.name]: e.target.value });
+  const handlePersonalInfoChange = (e) => {
+    setPersonalInfo({
+      ...personalInfo,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmailInfo({ ...emailInfo, [e.target.name]: e.target.value });
+  const handleEmailChange = (e) => {
+    setEmailInfo({
+      ...emailInfo,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordInfo({ ...passwordInfo, [e.target.name]: e.target.value });
+  const handlePasswordChange = (e) => {
+    setPasswordInfo({
+      ...passwordInfo,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
+  const handlePersonalInfoSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch(`${API_BASE_URL}/user/update-personal`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(personalInfo),
-      });
-      const data = await res.json();
-      if (!res.ok) alert("Update failed: " + data.error);
-      else alert("Personal info updated!");
-    } catch (err) {
-      console.error(err);
-      alert("Network error");
-    }
+    console.log('Personal Info:', personalInfo);
+    // Add your submit logic here
   };
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch(`${API_BASE_URL}/user/update-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(emailInfo),
-      });
-      const data = await res.json();
-      if (!res.ok) alert("Email update failed: " + data.error);
-      else alert("Email updated!");
-    } catch (err) {
-      console.error(err);
-      alert("Network error");
-    }
+    console.log('Email:', emailInfo);
+    // Add your submit logic here
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (passwordInfo.newPassword !== passwordInfo.confirmPassword) {
-      alert("Passwords do not match");
+      alert('Passwords do not match!');
       return;
     }
+    console.log('Password update submitted');
+    // Add your submit logic here
+  };
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/user/update-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(passwordInfo),
-      });
-      const data = await res.json();
-      if (!res.ok) alert("Password update failed: " + data.error);
-      else alert("Password updated!");
-    } catch (err) {
-      console.error(err);
-      alert("Network error");
-    }
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('access_token');
+    
+    // Navigate to landing page
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-16 px-4">
-      <h1 className="text-4xl dark:text-white mb-12 text-center">User Settings</h1>
-      <div className="max-w-3xl mx-auto space-y-12">
-        
-        {/* Personal Info Form */}
-        <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
-          <h2 className="text-2xl dark:text-white">Update Personal Info</h2>
-          <form className="space-y-4" onSubmit={handlePersonalInfoSubmit}>
-            <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input name="firstName" value={personalInfo.firstName} onChange={handlePersonalInfoChange} />
-            </div>
-            <div>
-              <Label htmlFor="middleName">Middle Name</Label>
-              <Input name="middleName" value={personalInfo.middleName} onChange={handlePersonalInfoChange} />
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input name="lastName" value={personalInfo.lastName} onChange={handlePersonalInfoChange} />
-            </div>
-            <div>
-              <Label htmlFor="organization">Organization</Label>
-              <Input name="organization" value={personalInfo.organization} onChange={handlePersonalInfoChange} />
-            </div>
-            <Button type="submit">Save Personal Info</Button>
-          </form>
-        </Card>
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+      {/* Navigation */}
+      <nav className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 dark:border-slate-800">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="dark:text-white text-lg font-semibold">User Settings</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            {/* Go to Home */}
+            <Link to="/homepage">
+              <Button variant="ghost">Home</Button>
+            </Link>
+            {/* User Settings */}
+            <Link to="/user">
+              <Button variant="ghost">User Settings</Button>
+            </Link>
+            {/* Logout Button */}
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          </div>
+        </div>
+      </nav>
 
-        {/* Email Update Form */}
-        <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
-          <h2 className="text-2xl dark:text-white">Update Email</h2>
-          <form className="space-y-4" onSubmit={handleEmailSubmit}>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
-            </div>
-            <Button type="submit">Save Email</Button>
-          </form>
-        </Card>
+      <main className="flex-1 container mx-auto px-4 py-12">
+        <div className="flex flex-col gap-12">
+          {/* Personal Info Form */}
+          <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
+            <h2 className="text-2xl dark:text-white">Update Personal Info</h2>
+            <form className="space-y-4" onSubmit={handlePersonalInfoSubmit}>
+              <div>
+                <Label htmlFor="firstName">First Name</Label>
+                <Input name="firstName" value={personalInfo.firstName} onChange={handlePersonalInfoChange} />
+              </div>
+              <div>
+                <Label htmlFor="middleName">Middle Name</Label>
+                <Input name="middleName" value={personalInfo.middleName} onChange={handlePersonalInfoChange} />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input name="lastName" value={personalInfo.lastName} onChange={handlePersonalInfoChange} />
+              </div>
+              <div>
+                <Label htmlFor="organization">Organization</Label>
+                <Input name="organization" value={personalInfo.organization} onChange={handlePersonalInfoChange} />
+              </div>
+              <Button type="submit">Save Personal Info</Button>
+            </form>
+          </Card>
 
-        {/* Password Update Form */}
-        <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
-          <h2 className="text-2xl dark:text-white">Update Password</h2>
-          <form className="space-y-4" onSubmit={handlePasswordSubmit}>
-            <div>
-              <Label htmlFor="oldPassword">Old Password</Label>
-              <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
-            </div>
-            <div>
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
-            </div>
-            <div>
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
-            </div>
-            <Button type="submit">Save Password</Button>
-          </form>
-        </Card>
+          {/* Email Update Form */}
+          <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
+            <h2 className="text-2xl dark:text-white">Update Email</h2>
+            <form className="space-y-4" onSubmit={handleEmailSubmit}>
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
+              </div>
+              <Button type="submit">Save Email</Button>
+            </form>
+          </Card>
 
-      </div>
+          {/* Password Update Form */}
+          <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
+            <h2 className="text-2xl dark:text-white">Update Password</h2>
+            <form className="space-y-4" onSubmit={handlePasswordSubmit}>
+              <div>
+                <Label htmlFor="oldPassword">Old Password</Label>
+                <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
+              </div>
+              <div>
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
+              </div>
+              <Button type="submit">Save Password</Button>
+            </form>
+          </Card>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800 py-8">
+        <div className="container mx-auto px-4 text-center text-slate-600 dark:text-slate-400">
+          <p>&copy; 2025 GrantGuru. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

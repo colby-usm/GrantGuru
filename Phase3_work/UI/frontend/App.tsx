@@ -2,8 +2,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { HomePage } from "./components/HomePage";
-import { UserPage } from "./components/UserPage";
 import { ThemeProvider } from "./components/ThemeProvider";
+import  UserPage from "./components/UserPage";
 
 export default function App() {
   return (
