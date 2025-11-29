@@ -49,7 +49,7 @@ class Permission:
     @staticmethod
     def can_create(role: Role, entity: Entity, user_id: int, resource_owner_id: Optional[int] = None) -> bool:
         """Check if the given role can create a resource."""
-        if role == Role.ADMIN:
+        if role == Role.ADMIN or entity == Entity.USERS:
             return True
         
         if role == Role.USER:

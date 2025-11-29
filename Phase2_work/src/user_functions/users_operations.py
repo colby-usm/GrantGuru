@@ -13,11 +13,10 @@ from src.utils.logging_utils import log_info, log_error
 from src.user_functions.view_based_operations import require_permission, Role, Entity
 from src.utils.sql_file_parsers import read_sql_helper
 
-# TODO A users entity is created outside of the RBP schema - this will be handeled in Phase 3
-
 CREATE_SCRIPT = "src/db_crud/users/create_users.sql"
 DELETE_SCRIPT = "src/db_crud/users/delete_users.sql"
 SELECT_SCRIPT = "src/db_crud/users/select_users_by_uuid.sql"
+SELECT_PASSWORDS_BY_EMAIL = "src/db_crud/users/select_password_by_email.sql"
 UPDATE_SCRIPT = "src/db_crud/users/update_users_fields.sql"
 UPDATE_PW_SCRIPT = "src/db_crud/users/update_users_password.sql"
 UPDATE_EMAIL_SCRIPT = "src/db_crud/users/update_users_email.sql"
@@ -26,9 +25,85 @@ SELECT_RESEARCH_FIELDS = "src/db_crud/research_fields/select_a_research_field_by
 DELETE_A_USERS_RESEARCH_FIELDS = "src/db_crud/research_fields/delete_a_users_research_fields.sql"
 
 
+
 class UserOperationError(Exception):
     """Custom exception for user operation failures."""
     pass
+
+
+
+def create_user_entity(cursor, user_info: dict, base_path: str | None=None) -> str | UserOperationError | MySQLError:
+    """
+    Creates a new user entity in the database using a dictionary of user fields.
+
+    Args:
+        cursor: MySQL cursor object for executing queries.
+        user_info (dict): Dictionary with keys:
+            f_name, m_name, l_name, institution, email, password
+        base_path (str): Base path to SQL scripts
+
+    Returns:
+        str: New user_id (UUID) on success, or an error object on failure.
+    """
+
+    new_user_id = str(uuid.uuid4())
+
+    # Parameters matching your SQL placeholders
+    user_params = {
+        "f_name": user_info.get("f_name"),
+        "m_name": user_info.get("m_name"),
+        "l_name": user_info.get("l_name"),
+        "institution": user_info.get("institution"),
+        "email": user_info.get("email"),
+        "password": user_info.get("password")
+    }
+
+    try:
+        sql_script = read_sql_helper(CREATE_SCRIPT, base_path)
+        if not sql_script:
+            raise UserOperationError(f"Could not read SQL script at {CREATE_SCRIPT}")
+
+        cursor.execute(sql_script, user_params)
+        return new_user_id
+
+    except MySQLError as e:
+        log_error(f"MySQL error executing {CREATE_SCRIPT}: {e}")
+        raise
+    except Exception as e:
+        log_error(f"Unexpected error executing {CREATE_SCRIPT}: {e}")
+        raise
+
+
+def get_password_hashed(cursor, email: str, base_path: str | None) -> tuple | UserOperationError | MySQLError:
+    """
+        Fetches the user ID and hashed password for a given email.
+
+        Args:
+            cursor: MySQL cursor object for executing queries.
+            email (str): The user's email to fetch.
+            base_path (str, optional): Base path to SQL scripts.
+
+        Returns:
+            tuple: (user_id, password_hash) on success,
+            UserOperationError or MySQLError on failure.
+    """
+
+    try:
+        sql_script = read_sql_helper(SELECT_PASSWORDS_BY_EMAIL, base_path=base_path)
+
+        cursor.execute(sql_script, (email,))
+        result = cursor.fetchone()
+        if result is None:
+            return UserOperationError("Email not found")
+
+        return result
+
+    except MySQLError as e:
+            log_error(f"MySQL error executing {SELECT_PASSWORDS_BY_EMAIL}: {e}")
+            return e
+    except Exception as e:
+            log_error(f"Unexpected error executing {SELECT_PASSWORDS_BY_EMAIL}: {e}")
+            return UserOperationError(e)
 
 
 @require_permission('read', Entity.USERS)
