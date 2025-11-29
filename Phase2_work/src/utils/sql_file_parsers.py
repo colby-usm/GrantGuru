@@ -1,5 +1,6 @@
+import os
 from src.utils.logging_utils import log_error
-def read_sql_helper(path: str) -> str | None:
+def read_sql_helper(path: str, base_path = None) -> str | None:
     """Read a SQL script from a file and return its content as a string.
 
     Args:
@@ -8,6 +9,10 @@ def read_sql_helper(path: str) -> str | None:
     Returns:
         The SQL script as a string, or None if an error occurs.
     """
+
+    if base_path:
+        path = os.path.join(base_path, path)
+
     try:
         with open(path, "r", encoding="utf-8") as f:
             return f.read()

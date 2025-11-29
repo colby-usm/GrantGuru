@@ -17,7 +17,7 @@ from src.system_functions.insert_cleaned_grant import main as insert_script
             4. Runs insert_script() to insert all new Grants to DB
 '''
 
-SCRAPE_PERIOD_DAYS = 1
+SCRAPE_PERIOD_DAYS = 365
 from src.utils.logging_utils import log_info
 
 
@@ -29,7 +29,9 @@ def daily_operations():
 
     log_info("Starting daily scraper scheduler...")
     dirty_grant_dict = scraper_script([
-        "--statuses", "forecasted", "posted" # we can add other filtrs here
+        "--statuses", "forecasted", "posted" # we can add other filters here
+        "-n", "100" # FOR TESTING ONLY
+
     ])
 
     cleaned_grants: list = cleaner_script(dirty_grant_dict, filter_on_dates=SCRAPE_PERIOD_DAYS)

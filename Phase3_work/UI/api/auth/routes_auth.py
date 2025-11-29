@@ -134,5 +134,30 @@ def signin():
         conn.close()
 
 
+@app.route("/api/aggregate-grants", methods=["GET"])
+def aggregate_grants():
+    try:
+        conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)
+        cursor = conn.cursor()
+
+        query = """
+            SELECT FORMAT(COALESCE(SUM(program_funding), 0), 0) AS total
+            FROM grants
+            WHERE CURDATE() > date_closed;
+        """
+
+        cursor.execute(query)
+        result = cursor.fetchone()
+
+        return jsonify({"total": result[0]})
+
+    except MySQLError as e:
+        return jsonify({"error": f"MySQL error: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="127.0.0.1", port=5000)

@@ -1,6 +1,4 @@
-// LandingPage
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Search, TrendingUp, Clock, Award } from "lucide-react";
@@ -11,6 +9,8 @@ import { AuthDialog } from "./AuthDialog";
 export function LandingPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
+  const [aggregateGrants, setAggregateGrants] = useState<string>("0");
+  const [aggregateFunding, setAggregateFunding] = useState<string>("0");
 
   const handleOpenLogin = () => {
     setAuthTab("login");
@@ -21,6 +21,22 @@ export function LandingPage() {
     setAuthTab("signup");
     setAuthOpen(true);
   };
+
+useEffect(() => {
+  async function fetchAggregateFunding() {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/public/aggregate-grants");
+      const data = await response.json();
+      if (data.total) {
+        setAggregateGrants(data.total);
+      }
+    } catch (err) {
+      console.error("Failed to fetch aggregate grants:", err);
+    }
+  }
+
+  fetchAggregateFunding();
+}, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -62,11 +78,11 @@ export function LandingPage() {
             </div>
             <div className="flex gap-8 pt-4">
               <div>
-                <div className="dark:text-white"> &lt; AGGREGATE TOTAL GRANTS FROM DB HERE &gt; </div>
+                <div className="dark:text-white">{aggregateGrants}</div>
                 <div className="text-sm text-slate-600 dark:text-slate-400">  Active Grants </div>
               </div>
               <div>
-                <div className="dark:text-white">  &lt; AGGREGATE TOTAL FUNDING HERE &gt; </div>
+                <div className="dark:text-white">{aggregateFunding}</div>
                 <div className="text-sm text-slate-600 dark:text-slate-400">Available Funding</div>
               </div>
             </div>
