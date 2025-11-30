@@ -19,7 +19,8 @@ Note, this will eventually be combined into 1 python script in 1 terminal.  For 
 # 2. Setup Flask Terminal (T2)
 1. Launch a second terminnal for the flask process
 2. Load a the python virtural environment
-3. export FLASK_APP=api/auth/routes.py
-4. cd Phase3_work/UI
-5. flask run --host=127.0.0.1 --port=5000
+3. export FLASK_APP=api
+4. export FLASK_RUN_APP=api:create_app
+5. cd Phase3_work/UI
+6. flask run --host=127.0.0.1 --port=5000
 
