@@ -26,7 +26,7 @@ _ = (create_user_entity, get_password_hashed, UserOperationError, Role, log_info
 def create_app():
     app = Flask(__name__)
 
-    CORS(app)
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000"]}})
 
     from api.auth import auth_bp
     from api.public import public_bp

@@ -1,6 +1,6 @@
 // AuthDialog.tsx
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -11,6 +11,7 @@ import { Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 
+
 const API_BASE_URL = "http://127.0.0.1:5000"; 
 
 interface AuthDialogProps {
@@ -18,6 +19,8 @@ interface AuthDialogProps {
   onOpenChange: (open: boolean) => void;
   defaultTab?: "login" | "signup";
 }
+
+
 
 export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDialogProps) {
   const navigate = useNavigate(); // ADD THIS LINE
@@ -136,8 +139,10 @@ if (signupData.password !== signupData.confirmPassword) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
 	<DialogContent className="sm:max-w-[480px] overflow-y-auto dark:bg-slate-800 dark:border-slate-700">
-        <DialogHeader>
-        </DialogHeader>
+	<DialogHeader />
+	<DialogDescription className="sr-only">
+	    Authentication dialog for login or signup
+	</DialogDescription>
         
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "signup")} className="w-full">
           <TabsList className="grid w-full grid-cols-2 dark:bg-slate-900">
