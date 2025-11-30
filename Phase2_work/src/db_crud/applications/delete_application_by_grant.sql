@@ -1,0 +1,11 @@
+/*
+Application Deletion Script for Applications Table
+Version: 10 November 2025
+Author: Abdullahi Abdullahi
+Description:
+ Delete all the applications for a specific grant 
+    Parameters:
+        - grant_id: The unique identifier of the grant (required)
+*/
+DELETE FROM Applications
+WHERE grant_id = %(grant_id)s;

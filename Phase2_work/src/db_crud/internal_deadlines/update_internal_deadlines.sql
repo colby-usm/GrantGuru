@@ -24,5 +24,11 @@ UPDATE InternalDeadlines
 SET
     deadline_name = COALESCE(%(deadline_name)s, deadline_name),
     deadline_date = COALESCE(%(deadline_date)s, deadline_date),
-    application_id = COALESCE(%(application_id)s, application_id)
+    application_id = COALESCE(
+        CASE 
+            WHEN %(application_id)s IS NOT NULL THEN UUID_TO_BIN(%(application_id)s)
+            ELSE NULL
+        END, 
+        application_id
+    )
 WHERE internal_deadline_id = UUID_TO_BIN(%(internal_deadline_id)s);

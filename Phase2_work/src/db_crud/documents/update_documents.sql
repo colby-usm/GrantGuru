@@ -21,5 +21,11 @@ SET
     document_type = COALESCE(%(document_type)s, document_type),
     document_size = COALESCE(%(document_size)s, document_size),
     upload_date = COALESCE(%(upload_date)s, upload_date),
-    application_id = COALESCE(%(application_id)s, application_id)
+    application_id = COALESCE(
+        CASE 
+            WHEN %(application_id)s IS NOT NULL THEN UUID_TO_BIN(%(application_id)s)
+            ELSE NULL
+        END, 
+        application_id
+    )
 WHERE document_id = UUID_TO_BIN(%(document_id)s);

@@ -15,7 +15,7 @@ CREATE TABLE Users (
     l_name VARCHAR(50) NOT NULL,
 
     institution VARCHAR(50),
-    password VARCHAR(100) NOT NULL
+    password VARCHAR(512) NOT NULL
 );
 
 CREATE TABLE ResearchField (
