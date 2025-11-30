@@ -101,63 +101,71 @@ export default function SettingsPage() {
         </div>
       </nav>
 
-      <main className="flex-1 container mx-auto px-4 py-12">
+
+     <main className="flex-1 container mx-auto px-4 py-12">
+        <div className="h-8"></div>
         <div className="flex flex-col gap-12">
           {/* Personal Info Form */}
-          <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
-            <h2 className="text-2xl dark:text-white">Update Personal Info</h2>
-            <form className="space-y-4" onSubmit={handlePersonalInfoSubmit}>
-              <div>
-                <Label htmlFor="firstName">First Name</Label>
-                <Input name="firstName" value={personalInfo.firstName} onChange={handlePersonalInfoChange} />
-              </div>
-              <div>
-                <Label htmlFor="middleName">Middle Name</Label>
-                <Input name="middleName" value={personalInfo.middleName} onChange={handlePersonalInfoChange} />
-              </div>
-              <div>
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input name="lastName" value={personalInfo.lastName} onChange={handlePersonalInfoChange} />
-              </div>
-              <div>
-                <Label htmlFor="organization">Organization</Label>
-                <Input name="organization" value={personalInfo.organization} onChange={handlePersonalInfoChange} />
-              </div>
-              <Button type="submit">Save Personal Info</Button>
-            </form>
-          </Card>
+		<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
+		  <div className="h-4"></div>
+		  <h2 className="text-2xl dark:text-white">Update Personal Info</h2>
+		  <form className="space-y-6" onSubmit={handlePersonalInfoSubmit}>
+		    <div>
+		      <Label htmlFor="firstName">First Name</Label>
+		      <Input name="firstName" value={personalInfo.firstName} onChange={handlePersonalInfoChange} />
+		    </div>
+		    <div>
+		      <Label htmlFor="middleName">Middle Name</Label>
+		      <Input name="middleName" value={personalInfo.middleName} onChange={handlePersonalInfoChange} />
+		    </div>
+		    <div>
+		      <Label htmlFor="lastName">Last Name</Label>
+		      <Input name="lastName" value={personalInfo.lastName} onChange={handlePersonalInfoChange} />
+		    </div>
+		    <div>
+		      <Label htmlFor="organization">Organization</Label>
+		      <Input name="organization" value={personalInfo.organization} onChange={handlePersonalInfoChange} />
+		    </div>
+		    <Button type="submit">Save Personal Info</Button>
+		    <div className="h-4"></div>
+		  </form>
+		</Card>
 
           {/* Email Update Form */}
-          <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
-            <h2 className="text-2xl dark:text-white">Update Email</h2>
-            <form className="space-y-4" onSubmit={handleEmailSubmit}>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
-              </div>
-              <Button type="submit">Save Email</Button>
-            </form>
-          </Card>
+	<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
+	  <div className="h-4"></div>
+	  <h2 className="text-2xl dark:text-white">Update Email</h2>
+	  <form className="space-y-6" onSubmit={handleEmailSubmit}>
+	    <div>
+	      <Label htmlFor="email">Email</Label>
+	      <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
+	    </div>
+	    <Button type="submit">Save Email</Button>
+	    <div className="h-4"></div>
+	  </form>
+	</Card>
 
           {/* Password Update Form */}
-          <Card className="p-8 space-y-6 dark:bg-slate-800 dark:border-slate-700">
-            <h2 className="text-2xl dark:text-white">Update Password</h2>
-            <form className="space-y-4" onSubmit={handlePasswordSubmit}>
-              <div>
-                <Label htmlFor="oldPassword">Old Password</Label>
-                <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
-              </div>
-              <div>
-                <Label htmlFor="newPassword">New Password</Label>
-                <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
-              </div>
-              <div>
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
-              </div>
-              <Button type="submit">Save Password</Button>
-            </form>
-          </Card>
+	<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
+	  <div className="h-4"></div>
+	  <h2 className="text-2xl dark:text-white">Update Password</h2>
+	  <form className="space-y-6" onSubmit={handlePasswordSubmit}>
+	    <div>
+	      <Label htmlFor="oldPassword">Old Password</Label>
+	      <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
+	    </div>
+	    <div>
+	      <Label htmlFor="newPassword">New Password</Label>
+	      <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
+	    </div>
+	    <div>
+	      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+	      <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
+	    </div>
+	    <Button type="submit">Save Password</Button>
+	    <div className="h-4"></div>
+	  </form>
+	</Card>
         </div>
       </main>
 
