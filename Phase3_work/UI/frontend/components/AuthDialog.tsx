@@ -53,7 +53,7 @@ export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDia
     };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/auth/signin`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -70,9 +70,10 @@ export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDia
         localStorage.setItem("user_id", data.user_id);
       }
 
+
       onOpenChange(false); // Close the dialog
       navigate("/homepage");
-      
+ 
     } catch (err) {
       console.error("Network or server error during login:", err);
       alert("Network error. Please try again.");
@@ -104,7 +105,7 @@ if (signupData.password !== signupData.confirmPassword) {
 }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
