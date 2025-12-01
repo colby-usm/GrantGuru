@@ -84,6 +84,8 @@ def signup():
         "password": hashed_password
     }
 
+    conn = None
+    cursor = None
     try:
         conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)
         cursor = conn.cursor()
@@ -97,13 +99,23 @@ def signup():
         return jsonify({"user_id": new_user_id}), 201
 
     except MySQLError as e:
-        if e.errno == 1062 and "email" in str(e):
+        # Some MySQL drivers may not expose `errno` in the same way; guard access
+        err_no = getattr(e, "errno", None)
+        if err_no == 1062 and "email" in str(e):
             return jsonify({"error": "This email already exists"}), 409
         return jsonify({"error": f"MySQL error: {str(e)}"}), 500
 
     finally:
-        cursor.close()
-        conn.close()
+        if cursor is not None:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
 
@@ -160,5 +172,14 @@ def signin():
         return jsonify({"error": "Internal server error"}), 500
 
     finally:
-        cursor.close()
-        conn.close()
+        # Ensure cursor/connection exist before attempting to close them
+        try:
+            if 'cursor' in locals() and cursor is not None:
+                cursor.close()
+        except Exception:
+            pass
+        try:
+            if 'conn' in locals() and conn is not None:
+                conn.close()
+        except Exception:
+            pass
