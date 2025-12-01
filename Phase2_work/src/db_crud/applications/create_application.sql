@@ -1,10 +1,10 @@
 /*
 Create Application Table
-Version: 10 November 2025
+Version: 15 November 2025 
 Author: Abdullahi Abdullahi
 Description: insert a new application with necessary fields
 */
-Insert Into Applications (
+INSERT INTO Applications (
     user_id,
     grant_id,
     status,
@@ -14,5 +14,5 @@ Insert Into Applications (
     UUID_TO_BIN(%(grant_id)s),
     TRIM(%(status)s),
     %(application_date)s
-)
+);
 
