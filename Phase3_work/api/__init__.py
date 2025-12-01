@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
 # ---- PATH SETUP ----
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../Phase2_work"))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../Phase2_work"))
 sys.path.insert(0, BASE_DIR)
 PHASE2_ROOT = os.path.abspath(BASE_DIR)
 

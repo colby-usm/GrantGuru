@@ -19,7 +19,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from src.utils.logging_utils import log_info, log_error
 
-load_dotenv()
+#load_dotenv()
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
