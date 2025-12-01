@@ -69,9 +69,7 @@ export function AuthDialog({ open, onOpenChange, defaultTab = "login" }: AuthDia
         return;
       }
 
-      if (loginData.rememberMe) {
-        localStorage.setItem("user_id", data.user_id);
-      }
+      sessionStorage.setItem("access_token", data.access_token);
 
 
       onOpenChange(false); // Close the dialog

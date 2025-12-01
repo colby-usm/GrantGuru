@@ -9,10 +9,10 @@ import { ThemeToggle } from './ThemeToggle';
 export default function SettingsPage() {
   const navigate = useNavigate();
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    organization: ''
+    fName: '',
+    mName: '',
+    lName: '',
+    institution: ''
   });
 
   const [emailInfo, setEmailInfo] = useState({
@@ -46,11 +46,55 @@ export default function SettingsPage() {
     });
   };
 
-  const handlePersonalInfoSubmit = (e) => {
-    e.preventDefault();
-    console.log('Personal Info:', personalInfo);
-    // Add your submit logic here
-  };
+
+const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Check for missing or empty required fields
+  const requiredFields = ["fName", "mName", "lName", "institution"];
+  const missingFields = requiredFields.filter(field => !personalInfo[field].trim());
+
+  if (missingFields.length > 0) {
+    alert(`Please fill out all fields`);
+    return; // Stop submission
+  }
+
+  console.log("Personal Info:", personalInfo);
+
+  try {
+    const accessToken = sessionStorage.getItem("access_token");
+    if (!accessToken) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    const response = await fetch("http://127.0.0.1:5000/api/user/personal-info", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(personalInfo),
+    });
+
+    const contentType = response.headers.get("Content-Type") || "";
+    let result: any = null;
+    if (contentType.includes("application/json")) {
+      result = await response.json();
+    } else {
+      result = { error: await response.text() };
+    }
+
+    if (response.ok) {
+      alert(result.msg || "Personal info updated successfully");
+    } else {
+      alert(result.error || "Error updating personal info");
+    }
+  } catch (err) {
+    console.error("Network error:", err);
+    alert("Failed to update personal info");
+  }
+};
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
@@ -69,9 +113,8 @@ export default function SettingsPage() {
   };
 
   const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_id');
+    sessionStorage.removeItem('access_token');
     
     // Navigate to landing page
     navigate('/');
@@ -111,20 +154,20 @@ export default function SettingsPage() {
 		  <h2 className="text-2xl dark:text-white">Update Personal Info</h2>
 		  <form className="space-y-6" onSubmit={handlePersonalInfoSubmit}>
 		    <div>
-		      <Label htmlFor="firstName">First Name</Label>
-		      <Input name="firstName" value={personalInfo.firstName} onChange={handlePersonalInfoChange} />
+		      <Label htmlFor="fName">First Name</Label>
+		      <Input name="fName" value={personalInfo.fName} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <div>
-		      <Label htmlFor="middleName">Middle Name</Label>
-		      <Input name="middleName" value={personalInfo.middleName} onChange={handlePersonalInfoChange} />
+		      <Label htmlFor="mName">Middle Name</Label>
+		      <Input name="mName" value={personalInfo.mName} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <div>
-		      <Label htmlFor="lastName">Last Name</Label>
-		      <Input name="lastName" value={personalInfo.lastName} onChange={handlePersonalInfoChange} />
+		      <Label htmlFor="lName">Last Name</Label>
+		      <Input name="lName" value={personalInfo.lName} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <div>
-		      <Label htmlFor="organization">Organization</Label>
-		      <Input name="organization" value={personalInfo.organization} onChange={handlePersonalInfoChange} />
+		      <Label htmlFor="institution">Organization</Label>
+		      <Input name="institution" value={personalInfo.institution} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <Button type="submit">Save Personal Info</Button>
 		    <div className="h-4"></div>

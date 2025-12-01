@@ -138,7 +138,7 @@ def read_users_fields_by_uuid(role: Role, user_id: str, resource_owner_id: str, 
 
 
 @require_permission('update', Entity.USERS)
-def update_users_fields(role: Role, user_id: str, resource_owner_id: str, cursor, new_fields: dict) -> None | UserOperationError | MySQLError:
+def update_users_fields(role: Role, user_id: str, resource_owner_id: str, cursor, new_fields: dict, base_path: str | None = None) -> None | UserOperationError | MySQLError:
     """
     Update a user's fields in the database.
 
@@ -157,7 +157,7 @@ def update_users_fields(role: Role, user_id: str, resource_owner_id: str, cursor
     _ = role, user_id, resource_owner_id  # for linter
 
     try:
-        sql_script = read_sql_helper(UPDATE_SCRIPT)
+        sql_script = read_sql_helper(UPDATE_SCRIPT, base_path)
         cursor.execute(sql_script, new_fields)
         return None
     except MySQLError as e:

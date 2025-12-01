@@ -10,7 +10,6 @@
     - m_name: Middle name (optional)
     - l_name: Last name (optional)
     - institution: Institution name (optional)
-    - email: Email address (optional, must remain unique)
 */
 
 UPDATE Users
@@ -18,6 +17,5 @@ SET
     f_name = COALESCE(%(f_name)s, f_name),
     m_name = COALESCE(%(m_name)s, m_name),
     l_name = COALESCE(%(l_name)s, l_name),
-    institution = COALESCE(%(institution)s, institution),
-    email = COALESCE(%(email)s, email)
+    institution = COALESCE(%(institution)s, institution)
 WHERE user_id = UUID_TO_BIN(%(user_id)s);
