@@ -173,13 +173,6 @@ if (signupData.password !== signupData.confirmPassword) {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="login-password" className="dark:text-slate-200">Password</Label>
-                  <Button 
-                    type="button" 
-                    variant="link" 
-                    className="p-0 h-auto dark:text-blue-400"
-                  >
-                    Forgot password?
-                  </Button>
                 </div>
                 <Input
                   id="login-password"
@@ -190,20 +183,6 @@ if (signupData.password !== signupData.confirmPassword) {
                   required
                   className="dark:bg-slate-900 dark:border-slate-600 dark:text-white dark:placeholder:text-slate-400"
                 />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="remember" 
-                  checked={loginData.rememberMe}
-                  onCheckedChange={(checked) => setLoginData({ ...loginData, rememberMe: checked as boolean })}
-                />
-                <Label 
-                  htmlFor="remember" 
-                  className="cursor-pointer dark:text-slate-300"
-                >
-                  Remember me for 30 days
-                </Label>
               </div>
 
               <Button type="submit" className="w-full" size="lg">
@@ -321,26 +300,10 @@ if (signupData.password !== signupData.confirmPassword) {
                 />
               </div>
 
-              <div className="flex items-start space-x-2">
-                <Checkbox 
-                  id="terms" 
-                  checked={signupData.acceptTerms}
-                  onCheckedChange={(checked) => setSignupData({ ...signupData, acceptTerms: checked as boolean })}
-                  className="mt-1"
-                />
-                <Label 
-                  htmlFor="terms" 
-                  className="cursor-pointer dark:text-slate-300"
-                >
-                  I agree to the Terms of Service and Privacy Policy
-                </Label>
-              </div>
-
               <Button 
                 type="submit" 
                 className="w-full" 
                 size="lg"
-                disabled={!signupData.acceptTerms}
               >
                 Create Account
               </Button>
