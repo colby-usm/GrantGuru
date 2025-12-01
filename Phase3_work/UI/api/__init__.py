@@ -20,6 +20,8 @@ MYSQL_PASS = os.getenv("GG_PASS", "")
 from src.user_functions.users_operations import (
     create_user_entity,
     update_users_fields,
+    update_users_email,
+    update_users_password,
     get_password_hashed,
     UserOperationError,
 )

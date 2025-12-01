@@ -1,5 +1,4 @@
 # routes_user.py
-import os
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mysql.connector import connect, Error as MySQLError
@@ -62,6 +61,113 @@ def update_personal_info():
 
     except Exception as e:
         current_app.logger.exception("Unexpected error updating personal info")
+        return jsonify({"error": "Internal server error"}), 500
+
+    finally:
+        try:
+            cursor.close()
+            conn.close()
+        except Exception:
+            pass
+
+
+@user_bp.route("/email", methods=["PUT"])
+@jwt_required()
+def update_email():
+    from api import update_users_email, Role, UserOperationError, HOST, MYSQL_USER, MYSQL_PASS, DB_NAME, PHASE2_ROOT
+    from mysql.connector import connect, Error as MySQLError
+
+    user_id = get_jwt_identity()
+    current_app.logger.info(f"Updating email for user_id: {user_id}")
+
+    data = request.get_json()
+    current_app.logger.info(f"Payload received: {data}")
+
+    if not data or "email" not in data or not data["email"]:
+        return jsonify({"error": "Missing or empty email"}), 400
+
+    new_email_data = {
+        "email": data["email"],
+        "user_id": user_id
+    }
+
+    try:
+        conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)
+        cursor = conn.cursor()
+
+        result = update_users_email(
+            role=Role.USER,
+            user_id=user_id,
+            resource_owner_id=user_id,
+            cursor=cursor,
+            new_email=data["email"],
+            base_path=PHASE2_ROOT
+        )
+
+        if isinstance(result, (UserOperationError, MySQLError)):
+            current_app.logger.error(f"Error updating users email: {result}")
+            return jsonify({"error": str(result)}), 500
+
+        conn.commit()
+        return jsonify({"msg": "Email updated successfully"}), 200
+
+    except Exception as e:
+        current_app.logger.exception("Unexpected error updating email")
+        return jsonify({"error": "Internal server error"}), 500
+
+    finally:
+        try:
+            cursor.close()
+            conn.close()
+        except Exception:
+            pass
+
+
+
+
+@user_bp.route("/password", methods=["PUT"])
+@jwt_required()
+def update_password():
+    from api import update_users_password, Role, UserOperationError, HOST, MYSQL_USER, MYSQL_PASS, DB_NAME, PHASE2_ROOT
+    from mysql.connector import connect, Error as MySQLError
+
+    user_id = get_jwt_identity()
+    current_app.logger.info(f"Updating password for user_id: {user_id}")
+
+    data = request.get_json()
+    current_app.logger.info(f"Payload received: {data}")
+
+    # Validate payload
+    if not data or "oldPassword" not in data or "newPassword" not in data:
+        return jsonify({"error": "Missing oldPassword or newPassword"}), 400
+    if not data["oldPassword"] or not data["newPassword"]:
+        return jsonify({"error": "Empty oldPassword or newPassword"}), 400
+
+    try:
+        conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)
+        cursor = conn.cursor()
+
+        result = update_users_password(
+            role=Role.USER,
+            user_id=user_id,
+            resource_owner_id=user_id,
+            cursor=cursor,
+            old_password=data["oldPassword"],
+            new_password=data["newPassword"],
+            base_path=PHASE2_ROOT
+        )
+
+        if isinstance(result, UserOperationError):
+            return jsonify({"error": str(result)}), 400
+        elif isinstance(result, MySQLError):
+            current_app.logger.error(f"Error updating user password: {result}")
+            return jsonify({"error": "Database error"}), 500
+
+        conn.commit()
+        return jsonify({"msg": "Password updated successfully"}), 200
+
+    except Exception as e:
+        current_app.logger.exception("Unexpected error updating password")
         return jsonify({"error": "Internal server error"}), 500
 
     finally:

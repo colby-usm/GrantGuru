@@ -96,21 +96,112 @@ const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
   }
 };
 
-  const handleEmailSubmit = (e) => {
-    e.preventDefault();
-    console.log('Email:', emailInfo);
-    // Add your submit logic here
-  };
+const handleEmailSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    if (passwordInfo.newPassword !== passwordInfo.confirmPassword) {
-      alert('Passwords do not match!');
+  const { email } = emailInfo;
+
+  // Frontend validation
+  if (!email) {
+    alert("Email is required.");
+    return;
+  }
+
+  // email regex validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  try {
+    const accessToken = sessionStorage.getItem("access_token");
+    if (!accessToken) {
+      alert("You are not logged in.");
       return;
     }
-    console.log('Password update submitted');
-    // Add your submit logic here
-  };
+
+    const response = await fetch("http://127.0.0.1:5000/api/user/email", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const contentType = response.headers.get("Content-Type") || "";
+    let result: any = null;
+    if (contentType.includes("application/json")) {
+      result = await response.json();
+    } else {
+      result = { error: await response.text() };
+    }
+
+    if (response.ok) {
+      alert(result.msg || "Email updated successfully");
+    } else {
+      alert(result.error || "Error updating email");
+    }
+  } catch (err) {
+    console.error("Network error:", err);
+    alert("Failed to update email");
+  }
+};
+
+const handlePasswordSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Check that new password and confirm password match
+  if (passwordInfo.newPassword !== passwordInfo.confirmPassword) {
+    alert('Passwords do not match!');
+    return;
+  }
+
+  if (passwordInfo.newPassword.length < 8) {
+    alert('Password must be at least 8 characters long.');
+    return;
+  }
+
+  try {
+    const accessToken = sessionStorage.getItem("access_token");
+    if (!accessToken) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    const response = await fetch("http://127.0.0.1:5000/api/user/password", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        oldPassword: passwordInfo.oldPassword,
+        newPassword: passwordInfo.newPassword
+      }),
+    });
+
+    const contentType = response.headers.get("Content-Type") || "";
+    let result: any = null;
+    if (contentType.includes("application/json")) {
+      result = await response.json();
+    } else {
+      result = { error: await response.text() };
+    }
+
+    if (response.ok) {
+      alert(result.msg || "Password updated successfully");
+      setPasswordInfo({ oldPassword: "", newPassword: "", confirmPassword: "" }); // clear fields
+    } else {
+      alert(result.error || "Error updating password");
+    }
+  } catch (err) {
+    console.error("Network error:", err);
+    alert("Failed to update password");
+  }
+};
+
 
   const handleLogout = () => {
     sessionStorage.removeItem('user_id');
@@ -119,6 +210,7 @@ const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
     // Navigate to landing page
     navigate('/');
   };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
@@ -151,22 +243,22 @@ const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
           {/* Personal Info Form */}
 		<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
 		  <div className="h-4"></div>
-		  <h2 className="text-2xl dark:text-white">Update Personal Info</h2>
+		  <h2 className="text-2xl dark:text-white">&nbsp;Update Personal Info</h2>
 		  <form className="space-y-6" onSubmit={handlePersonalInfoSubmit}>
 		    <div>
-		      <Label htmlFor="fName">First Name</Label>
+		      <Label htmlFor="fName">&nbsp;First Name</Label>
 		      <Input name="fName" value={personalInfo.fName} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <div>
-		      <Label htmlFor="mName">Middle Name</Label>
+		      <Label htmlFor="mName">&nbsp;Middle Name</Label>
 		      <Input name="mName" value={personalInfo.mName} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <div>
-		      <Label htmlFor="lName">Last Name</Label>
+		      <Label htmlFor="lName">&nbsp;Last Name</Label>
 		      <Input name="lName" value={personalInfo.lName} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <div>
-		      <Label htmlFor="institution">Organization</Label>
+		      <Label htmlFor="institution">&nbsp;Organization</Label>
 		      <Input name="institution" value={personalInfo.institution} onChange={handlePersonalInfoChange} />
 		    </div>
 		    <Button type="submit">Save Personal Info</Button>
@@ -177,10 +269,10 @@ const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
           {/* Email Update Form */}
 	<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
 	  <div className="h-4"></div>
-	  <h2 className="text-2xl dark:text-white">Update Email</h2>
+	  <h2 className="text-2xl dark:text-white">&nbsp;Update Email</h2>
 	  <form className="space-y-6" onSubmit={handleEmailSubmit}>
 	    <div>
-	      <Label htmlFor="email">Email</Label>
+	      <Label htmlFor="email">&nbsp;Email</Label>
 	      <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
 	    </div>
 	    <Button type="submit">Save Email</Button>
@@ -191,18 +283,18 @@ const handlePersonalInfoSubmit = async (e: React.FormEvent) => {
           {/* Password Update Form */}
 	<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
 	  <div className="h-4"></div>
-	  <h2 className="text-2xl dark:text-white">Update Password</h2>
+	  <h2 className="text-2xl dark:text-white">&nbsp;Update Password</h2>
 	  <form className="space-y-6" onSubmit={handlePasswordSubmit}>
 	    <div>
-	      <Label htmlFor="oldPassword">Old Password</Label>
+	      <Label htmlFor="oldPassword">&nbsp;Old Password</Label>
 	      <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
 	    </div>
 	    <div>
-	      <Label htmlFor="newPassword">New Password</Label>
+	      <Label htmlFor="newPassword">&nbsp;New Password</Label>
 	      <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
 	    </div>
 	    <div>
-	      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+	      <Label htmlFor="confirmPassword">&nbsp;Confirm New Password</Label>
 	      <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
 	    </div>
 	    <Button type="submit">Save Password</Button>
