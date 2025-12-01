@@ -1,15 +1,16 @@
 /*
   update_users_password.sql
   Author: Colby Wirth
-  Version: 8 November 2025
-  Description: Update a user's password by UUID. Only the password can be updated.
+  Version: 30 November 2025
+  Description: Update a user's password by UUID. Only updates if the old password matches.
 
   Parameters:
     - user_id: UUID of the user to update (required)
-    - password: New hashed password (required)
+    - old_password: Current hashed password (required)
+    - new_password: New hashed password (required)
 */
 
 UPDATE Users
-SET
-    password = %(password)s
-WHERE user_id = UUID_TO_BIN(%(user_id)s);
+SET password = %(new_password)s
+WHERE user_id = UUID_TO_BIN(%(user_id)s)
+  AND password = %(old_password)s;

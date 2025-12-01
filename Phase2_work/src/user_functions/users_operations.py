@@ -8,6 +8,7 @@
 
 import uuid
 from mysql.connector import Error as MySQLError
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from src.utils.logging_utils import log_info, log_error
 from src.user_functions.view_based_operations import require_permission, Role, Entity
@@ -169,41 +170,62 @@ def update_users_fields(role: Role, user_id: str, resource_owner_id: str, cursor
 
 
 @require_permission('update', Entity.USERS)
-def update_users_password(role: Role, user_id: str, resource_owner_id: str, cursor, new_password: str) -> None | UserOperationError | MySQLError:
+def update_users_password(
+    role: Role,
+    user_id: str, resource_owner_id: str, cursor,
+    old_password: str, new_password: str, base_path: str | None = None
+) -> None | UserOperationError | MySQLError:
     """
-    Update a user's password in the database.
-
-    Reads the password update SQL script and executes it with the new password.
+    Update a user's password in the database using their user_id (UUID).
 
     Args:
         role (Role): Role of the caller (used by decorator for permissions)
         user_id (str): UUID of the user to update
         resource_owner_id (str): UUID of the resource owner (used by decorator)
         cursor: MySQL cursor object
-        new_password (str): New hashed password
+        old_password (str): Current password (plaintext)
+        new_password (str): New password (plaintext)
 
     Returns:
-        None on success, UserOperationError on logical/user failure,
+        None on success, UserOperationError if old password is wrong or user not found,
         MySQLError on database failure.
     """
     _ = role, resource_owner_id  # for linter
 
-    params = {"user_id": user_id, "password": new_password}
-
     try:
-        sql_script = read_sql_helper(UPDATE_PW_SCRIPT)
-        cursor.execute(sql_script, params)
+        # Convert UUID string to 16-byte format for MySQL
+        user_uuid_bytes = uuid.UUID(user_id).bytes
+
+        # Fetch hashed password
+        cursor.execute("SELECT password FROM users WHERE user_id=%s", (user_uuid_bytes,))
+        row = cursor.fetchone()
+        if not row:
+            return UserOperationError("User not found")
+
+        current_hashed_pw = row[0]
+
+        # Verify old password
+        if not check_password_hash(current_hashed_pw, old_password):
+            return UserOperationError("Old password is incorrect")
+
+        # Hash new password
+        new_hashed_pw = generate_password_hash(new_password, method="pbkdf2:sha256", salt_length=16)
+
+        # Update password
+        cursor.execute("UPDATE users SET password=%s WHERE user_id=%s", (new_hashed_pw, user_uuid_bytes))
         return None
+
     except MySQLError as e:
-        log_error(f"MySQL error executing {UPDATE_PW_SCRIPT}: {e}")
+        log_error(f"MySQL error updating password for {user_id}: {e}")
         return e
     except Exception as e:
-        log_error(f"Unexpected error executing {UPDATE_PW_SCRIPT}: {e}")
+        log_error(f"Unexpected error updating password for {user_id}: {e}")
         return UserOperationError(e)
 
 
+
 @require_permission('update', Entity.USERS)
-def update_users_email(role: Role, user_id: str, resource_owner_id: str, cursor, new_email: str) -> None | UserOperationError | MySQLError:
+def update_users_email(role: Role, user_id: str, resource_owner_id: str, cursor, new_email: str, base_path: str | None = None) -> None | UserOperationError | MySQLError:
     """
     Update a user's email address in the database.
 
@@ -224,7 +246,7 @@ def update_users_email(role: Role, user_id: str, resource_owner_id: str, cursor,
 
     params = {"user_id": user_id, "email": new_email}
     try:
-        sql_script = read_sql_helper(UPDATE_EMAIL_SCRIPT)
+        sql_script = read_sql_helper(UPDATE_EMAIL_SCRIPT, base_path)
         cursor.execute(sql_script, params)
         # success
         return None
