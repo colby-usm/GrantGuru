@@ -285,7 +285,7 @@ export function GrantApplyPage() {
                       <span className="text-xs font-medium text-muted-foreground">{doc.type}</span>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                           <Input
+                           <input
                               type="file"
                               multiple
                               className="hidden"
