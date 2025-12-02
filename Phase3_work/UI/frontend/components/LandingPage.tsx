@@ -22,13 +22,14 @@ export function LandingPage() {
     setAuthOpen(true);
   };
 
+
 useEffect(() => {
   async function fetchAggregateFunding() {
     try {
       const response = await fetch("http://127.0.0.1:5000/api/public/aggregate-grants");
       const data = await response.json();
       if (data.total) {
-        setAggregateGrants(data.total);
+        setAggregateFunding(data.total);
       }
     } catch (err) {
       console.error("Failed to fetch aggregate grants:", err);
@@ -37,6 +38,26 @@ useEffect(() => {
 
   fetchAggregateFunding();
 }, []);
+
+
+
+useEffect(() => {
+  async function fetchAllGrants() {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/public/fetch_grant_count");
+      const data = await response.json();
+
+      if (data.total) {
+        setAggregateGrants(data.total);
+      }
+    } catch (err) {
+      console.error("Failed to fetch grant counts:", err);
+    }
+  }
+
+  fetchAllGrants();
+}, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
@@ -83,7 +104,7 @@ useEffect(() => {
               </div>
               <div>
                 <div className="dark:text-white">{aggregateFunding}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-400">Available Funding</div>
+                <div className="text-sm text-slate-600 dark:text-slate-400">Current Funding </div>
               </div>
             </div>
           </div>
@@ -137,9 +158,9 @@ useEffect(() => {
             <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
               <Award className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
-            <h3 className="dark:text-white">Other  Thing</h3>
+            <h3 className="dark:text-white">Document Storage</h3>
             <p className="text-slate-600 dark:text-slate-300">
-		Catchy Marketing thing
+		Upload and manage documents associated with your applications for easy management
             </p>
           </Card>
         </div>
@@ -179,7 +200,7 @@ useEffect(() => {
               </div>
               <h3 className="dark:text-white">Apply with Confidence</h3>
               <p className="text-slate-600 dark:text-slate-300">
-                Track deadlines and build applications with our tools
+                Track deadlines and build grant applications with our tools
               </p>
             </div>
           </div>

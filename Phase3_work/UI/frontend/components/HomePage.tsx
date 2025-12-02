@@ -4,13 +4,12 @@ import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function HomePage() {
-  const userId = localStorage.getItem("user_id");
+  const userId = sessionStorage.getItem("user_id");
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear user data from localStorage
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_id');
+    sessionStorage.removeItem('access_token');
   
     // Navigate to landing page
     navigate('/');
