@@ -55,24 +55,23 @@ if __name__ == "__main__":
         # Check if DB exists
         cursor.execute("SHOW DATABASES LIKE %s;", (DB_NAME,))
         if cursor.fetchone():
-            log_error(f"Can't create database '{DB_NAME}'. It already exists. Aborting.")
-            sys.exit(1)
+            log_info(f"Database '{DB_NAME}' already exists. Skipping creation.")
+            sys.exit(0)
+        else:
+            cursor.execute(INSTANTIATE_DB_COMMAND)
+            log_info(f"Database '{DB_NAME}' created successfully.")
+            cursor.execute(f"USE `{DB_NAME}`;")
 
-        # Create DB
-        cursor.execute(INSTANTIATE_DB_COMMAND)
-        log_info(f"Database '{DB_NAME}' created successfully.")
-        cursor.execute(f"USE `{DB_NAME}`;")
+            # Execute all SQL files in directory (sorted alphanumerically)
+            sql_files = sorted(BUILD_DIR.glob("*.sql"))
+            if not sql_files:
+                log_error(f"No SQL files found in {BUILD_DIR}")
+                sys.exit(1)
 
-        # Execute all SQL files in directory (sorted alphanumerically)
-        sql_files = sorted(BUILD_DIR.glob("*.sql"))
-        if not sql_files:
-            log_error(f"No SQL files found in {BUILD_DIR}")
-            sys.exit(1)
-
-        for sql_file in sql_files:
-            execute_sql_file(cursor, sql_file)
-            cnx.commit()
-        log_info("All tables built successfully")
+            for sql_file in sql_files:
+                execute_sql_file(cursor, sql_file)
+                cnx.commit()
+            log_info("All tables built successfully")
 
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:

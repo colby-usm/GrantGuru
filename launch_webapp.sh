@@ -64,10 +64,10 @@ source "$VENV_PATH"
 cd "$PHASE2_DIR"
 python3 -m src.system_functions.create_db_script
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✓ Database created successfully${NC}\n"
-elif [ $? -eq 1 ]; then
-    echo -e "${YELLOW}⚠ Database already exists, skipping creation${NC}\n"
+status=$?
+
+if [ $status -eq 0 ]; then
+    echo -e "${GREEN}✓ Database exists or created successfully${NC}\n"
 else
     echo -e "${RED}✗ Database creation failed${NC}"
     exit 1
