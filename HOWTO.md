@@ -67,7 +67,7 @@ export FLASK_APP=api
 export FLASK_RUN_APP=api:create_app
 
 # Navigate to UI directory
-cd Phase3_work/UI
+cd Phase3_work
 
 # Start Flask server
 flask run --host=127.0.0.1 --port=5000
