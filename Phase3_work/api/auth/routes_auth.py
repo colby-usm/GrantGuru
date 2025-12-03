@@ -19,21 +19,12 @@
 """
 
 
-import os
-from dotenv import load_dotenv
 from flask import request, jsonify
+from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from mysql.connector import connect, Error as MySQLError
 
 from . import auth_bp
-from api import create_user_entity, get_password_hashed, UserOperationError, Role, log_info, log_error, PHASE2_ROOT
-
-
-load_dotenv()
-DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
-HOST = os.getenv("HOST", "localhost")
-MYSQL_USER = os.getenv("GG_USER", "root")
-MYSQL_PASS = os.getenv("GG_PASS", "")
 
 
 @auth_bp.route("/signup", methods=["POST"])
@@ -55,6 +46,7 @@ def signup():
     - 409: JSON with 'error' if email already exists
     - 500: JSON with 'error' for other MySQL errors
     """
+    from api import create_user_entity, UserOperationError, PHASE2_ROOT, DB_NAME, HOST, MYSQL_USER, MYSQL_PASS
 
     data = request.get_json()
     if not data:
@@ -123,6 +115,8 @@ def signin():
     - 500: JSON with 'error' for MySQL or unexpected errors
     """
 
+    from api import get_password_hashed, UserOperationError, PHASE2_ROOT, DB_NAME, HOST, MYSQL_USER, MYSQL_PASS, log_error
+
     data = request.get_json()
     if not data:
         return jsonify({"error": "Missing JSON body"}), 400
@@ -150,7 +144,8 @@ def signin():
         if not check_password_hash(stored_hash, password):
             return jsonify({"error": "Invalid credentials"}), 401
 
-        return jsonify({"user_id": user_id}), 200
+        access_token = create_access_token(identity=user_id)
+        return jsonify({"access_token": access_token}), 200
 
     except MySQLError as e:
         log_error(f"MySQL error during signin: {e}")
