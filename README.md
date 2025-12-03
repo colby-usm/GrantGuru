@@ -1,91 +1,42 @@
-# GrantGuru Setup Guide
+# GrantGuru
 
+## Prerequisites
 
+-   Python **3.12**
+-   Node.js **23.11.0**
+-   Either **nvm** or **fnm** (Node version managers)
 
-## Initial Setup (One-Time)
+## Project Structure
 
-### Prerequisites
+All scripts must be executed from the `GrantGuru/` directory.
 
-- Python 3.12
-- Node.js (version 23.11.0)
-- nvm (Node Version Manager)
+## Setup
 
-### 1. Python Environment Setup
+To set up the project:
 
-```bash
-# Navigate to project root
-cd GrantGuru
-
-# Create virtual environment (choose one method)
-python3.12 -m venv venv
-# OR using conda:
-# conda create -n grantguru python=3.12
-
-# Activate virtual environment
-source venv/bin/activate  # On macOS/Linux
-# OR on Windows:
-# venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+``` bash
+./setup.sh
 ```
 
-### 2. Node.js Environment Setup
+This installs Python dependencies, initializes the virtual environment,
+and installs Node packages using whichever Node version manager (`nvm`
+or `fnm`) is available.
 
-```bash
-# Install Node.js version 23.11.0
-nvm install 23.11.0
+## Running the Web App
 
-# Navigate to UI directory
-cd Phase3_work/UI
+To start the backend (Flask) and frontend (React) together:
 
-# Install npm dependencies
-npm install
-```
----
-
-## Running the Application
-
-### Terminal 1: Flask Backend
-
-```bash
-# Activate Python virtual environment
-source venv/bin/activate  # Adjust path if needed
-
-# Set Flask environment variables
-export FLASK_APP=api
-export FLASK_RUN_APP=api:create_app
-
-# Navigate to UI directory
-cd Phase3_work
-
-# Start Flask server
-flask run --host=127.0.0.1 --port=5000
+``` bash
+./launch_webapp.sh
 ```
 
-**Expected output**: Flask server running on `http://127.0.0.1:5000`
+This script automatically launches both services concurrently.
 
----
+## Cleanup
 
-### Terminal 2: React Development Server
+To reset the environment (remove venv, node_modules, db
+etc.):
 
-```bash
-
-# Navigate to UI directory
-cd Phase3_work/UI
-
-# Start development server
-npm run dev
+``` bash
+./clean_environment.sh
 ```
-
-**Expected output**: Development server running (typically on `http://localhost:5173` for Vite)
-
----
-
-## Troubleshooting
-
-- Ensure both terminals are running simultaneously
-- Verify Python virtual environment is activated in T1
-- Confirm Node.js version 23.11.0 is active in T2 (`node -v`)
-- Check that all dependencies are installed correctly
-- Ensure ports 5000 and the dev server port are not already in use
