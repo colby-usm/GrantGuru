@@ -172,6 +172,9 @@ export function HomePage({ onViewDetails, onApply }) {
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
             </Link>
+            <Link to="/search">
+              <Button variant="ghost">Search Grants</Button>
+            </Link>
             {/* User Settings */}
             <Link to="/user">
               <Button variant="ghost">User Settings</Button>

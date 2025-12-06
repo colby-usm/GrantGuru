@@ -5,6 +5,7 @@ import { HomePage } from "./components/HomePage";
 import { GrantApplyPage } from "./components/GrantApplyPage.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";
 import  UserPage from "./components/UserPage";
+import SearchGrants from "./components/SearchGrants";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/homepage" element={<HomePage />} />
           <Route path="/user" element={<UserPage />} />
           <Route path="/grantApply" element={<GrantApplyPage/>} />
+          <Route path="/search" element={<SearchGrants/>} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
