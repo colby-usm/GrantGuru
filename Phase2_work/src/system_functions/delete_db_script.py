@@ -30,7 +30,7 @@ load_dotenv()
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
-MYSQL_PASS = os.getenv("GG_PASS", "")
+MYSQL_PASS = os.getenv("GG_PASS", "password")
 
 # Paths to SQL scripts
 CREATE_USER_SCRIPT = Path("src/db_crud/users/create_users.sql")
