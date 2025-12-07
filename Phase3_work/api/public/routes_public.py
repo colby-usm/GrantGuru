@@ -37,6 +37,7 @@ def aggregate_grants():
                 total = cursor.fetchone()[0]
         return jsonify({"total": total})
     except MySQLError as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
 
 
@@ -55,4 +56,5 @@ def fetch_grant_count():
         return jsonify({"total": total})
 
     except MySQLError as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
