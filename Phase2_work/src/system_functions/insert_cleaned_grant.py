@@ -66,7 +66,6 @@ def main (cleaned_grants: list):
     cursor = None
     successful_insertions = 0
 
-    log_info("Connecting to MySQL server for insertion...")
 
     try:
         # --- 1. CONNECT TO DATABASE (with DB name specified) ---
@@ -79,26 +78,22 @@ def main (cleaned_grants: list):
         cursor = cnx.cursor()
         
         # --- 2. LOAD SQL Script ---
-        log_info(f"Loading insertion script from {INSERT_GRANT_SCRIPT}...")
         sql_insert = read_sql_helper(INSERT_GRANT_SCRIPT)
         
         if sql_insert is None:
             raise GrantOperationError(f"SQL script file not found: {INSERT_GRANT_SCRIPT}")
         
-        log_info(f"Loading selection script from {CHECK_IF_ALREADY_IN_DB_SCRIPT}...")
         sql_select = read_sql_helper(CHECK_IF_ALREADY_IN_DB_SCRIPT)
 
         if sql_select is None:
             raise GrantOperationError(f"SQL script file not found: {CHECK_IF_ALREADY_IN_DB_SCRIPT}")
         
-        log_info(f"Loading update script from {UPDATE_GRANT_SCRIPT}...")
         sql_update = read_sql_helper(UPDATE_GRANT_SCRIPT)
         
         if sql_update is None:
             raise GrantOperationError(f"SQL script file not found: {UPDATE_GRANT_SCRIPT}")
         
         # --- 3. EXECUTE INSERTION ---
-        log_info("Executing grant insertion...")
         
         # Executes the query using the formatted dictionary for parameterized insertion
         for grants in cleaned_grants:
@@ -111,15 +106,11 @@ def main (cleaned_grants: list):
             # If the grant is already in the database it will update it with the new information.
             if grant == None:
                 cursor.execute(sql_insert, formatted_params) 
-                log_info("Grant inserted")
             else:
                 cursor.execute(sql_update, formatted_params)
-                log_info("Grant updated")
             
         
-        log_info(f"All grants inserted into transaction cache. Committing...")
         cnx.commit()
-        log_info(f"Batch insertion successful.")
 
         
 
@@ -150,7 +141,31 @@ def main (cleaned_grants: list):
         # --- 5. GUARANTEE CONNECTION CLOSURE ---
         if cursor:
             cursor.close()
-            log_info("Cursor closed.")
         if cnx and cnx.is_connected():
             cnx.close()
-            log_info("Database connection closed.")
+
+
+
+
+if __name__ == "__main__":
+    import sys
+    import json
+
+    if len(sys.argv) != 2:
+        print("Usage: python -m src.system_functions.insert_cleaned_grant <path_to_grants_json>")
+        sys.exit(1)
+
+    json_path = sys.argv[1]
+    try:
+        with open(json_path, "r") as f:
+            cleaned_grants = json.load(f)
+    except Exception as e:
+        print(f"Error loading JSON file {json_path}: {e}")
+        sys.exit(1)
+
+    result = main(cleaned_grants)
+    if result is None:
+        sys.exit(0)
+    else:
+        print(f"✗ Grant insertion failed: {result}")
+        sys.exit(1)

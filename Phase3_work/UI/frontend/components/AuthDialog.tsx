@@ -120,7 +120,7 @@ if (signupData.password !== signupData.confirmPassword) {
     }
 
     console.log("User created:", data.user_id);
-    alert("[DEBUG] Account created successfully!");
+    alert("Account created successfully!");
     
   } catch (err) {
     console.error(err);
