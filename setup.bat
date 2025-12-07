@@ -33,7 +33,7 @@ echo Checking system prerequisites...
 echo.
 
 REM Check Python 3.12
-python --version 2>nul | findstr /C:"3.12" >nul
+py -3.12 --version 2>nul | findstr /C:"3.12" >nul
 if errorlevel 1 (
     echo [ERROR] Python 3.12 not found. Install Python 3.12 and retry.
     pause
@@ -72,7 +72,7 @@ echo.
 
 if not exist "venv\" (
     echo Creating virtual environment...
-    python -m venv venv
+    py -3.12 -m venv venv
     if errorlevel 1 (
         echo [ERROR] Failed to create virtual environment
         pause
