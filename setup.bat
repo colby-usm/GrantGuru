@@ -14,6 +14,18 @@ REM Change to script directory
 cd /d "%~dp0"
 
 REM ###############################################################################
+REM Set Database Environment Variables
+REM ###############################################################################
+
+echo Setting database environment variables...
+set GG_USER=root
+set GG_PASS=Kappa20205!
+set DB_NAME=GrantGuruDB
+set HOST=127.0.0.1
+echo [OK] Environment variables set
+echo.
+
+REM ###############################################################################
 REM 1. Verify prerequisites
 REM ###############################################################################
 
@@ -130,7 +142,32 @@ if "%USE_NVM%"=="true" (
 echo.
 
 REM ###############################################################################
-REM 4. Install UI dependencies
+REM 4. Create Database
+REM ###############################################################################
+
+echo ========================================
+echo Creating Database
+echo ========================================
+echo.
+
+if exist "create_db_script.py" (
+    echo Running database creation script...
+    python create_db_script.py
+    if errorlevel 1 (
+        echo [WARNING] Database creation encountered an issue
+        echo This may be normal if database already exists
+    ) else (
+        echo [OK] Database created successfully
+    )
+) else (
+    echo [WARNING] create_db_script.py not found, skipping database creation
+    echo You may need to create the database manually
+)
+
+echo.
+
+REM ###############################################################################
+REM 5. Install UI dependencies
 REM ###############################################################################
 
 echo ========================================
