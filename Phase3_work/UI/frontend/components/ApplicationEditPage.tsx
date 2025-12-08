@@ -8,7 +8,6 @@ import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Calendar, ArrowLeft, Save, Building2, X, Upload, CheckCircle2, AlertCircle, LinkIcon } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
 import {
   Select,
   SelectContent,
@@ -385,7 +384,6 @@ export function ApplicationEditPage() {
             <span className="dark:text-white text-lg font-semibold">Edit Application</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
             </Link>
