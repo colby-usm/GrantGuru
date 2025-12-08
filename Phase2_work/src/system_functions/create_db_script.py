@@ -14,7 +14,7 @@
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 import mysql.connector
 from mysql.connector import errorcode
 from src.utils.logging_utils import log_info, log_error
