@@ -20,7 +20,7 @@ load_dotenv(dotenv_path)
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
-MYSQL_PASS = "F8F6iVoAlcXnLPll" #os.getenv("GG_PASS", "")
+MYSQL_PASS = os.getenv("GG_PASS", "")
 
 # ---- UTIL IMPORTS ----
 from src.user_functions.users_operations import (
@@ -51,7 +51,8 @@ def create_app():
             "http://localhost:5173",
             "http://127.0.0.1:5173",
         ],
-        allow_headers=["Content-Type", "Authorization"]
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     )
     JWTManager(app)
 

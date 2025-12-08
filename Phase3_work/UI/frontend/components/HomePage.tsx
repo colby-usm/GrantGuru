@@ -1,7 +1,6 @@
 // HomePage.tsx
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-//import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -21,7 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "./ui/dialog";
 import { Label } from "./ui/label";
 import {
@@ -34,12 +32,13 @@ import {
 import { Plus, Trash2, Edit, Eye } from "lucide-react";
 
 // ----------------------
-// Mock Data & Interfaces
+// Interfaces
 // ----------------------
 interface Application {
   application_id: string;
   user_id: string;
   grant_id: string;
+  submission_status: string;
   status: string;
   application_date: string;
 }
@@ -48,52 +47,53 @@ interface ApplicationUI extends Application {
   grant_name?: string;
 }
 
-const MOCK_GRANTS = [
-  { id: "550e8400-e29b-41d4-a716-446655440001", name: "Community Development Grant" },
-  { id: "550e8400-e29b-41d4-a716-446655440002", name: "Tech Innovation Fund" },
-  { id: "550e8400-e29b-41d4-a716-446655440003", name: "Green Energy Initiative" },
-  { id: "550e8400-e29b-41d4-a716-446655440004", name: "Small Business Support" },
-  { id: "550e8400-e29b-41d4-a716-446655440005", name: "Arts & Culture Fund" },
-];
-
-const INITIAL_APPLICATIONS: ApplicationUI[] = [
-  {
-    application_id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-    user_id: "u1b2c3d4-e5f6-7890-1234-567890abcdef",
-    grant_id: "550e8400-e29b-41d4-a716-446655440001",
-    status: "pending",
-    application_date: "2025-11-01",
-    grant_name: "Community Development Grant",
-  },
-  {
-    application_id: "b2c3d4e5-f678-9012-3456-7890abcdef12",
-    user_id: "u1b2c3d4-e5f6-7890-1234-567890abcdef",
-    grant_id: "550e8400-e29b-41d4-a716-446655440002",
-    status: "in_review",
-    application_date: "2025-10-15",
-    grant_name: "Tech Innovation Fund",
-  },
-];
-
-
-
-interface ApplicationsPageProps {
-  onViewDetails?: (applicationId: string) => void;
-  onApply?: () => void;
-}
-
 // ----------------------
 // HomePage Component
 // ----------------------
-export function HomePage({ onViewDetails, onApply }) {
+export function HomePage() {
   const navigate = useNavigate();
-  const [applications, setApplications] = useState<ApplicationUI[]>(INITIAL_APPLICATIONS);
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [applications, setApplications] = useState<ApplicationUI[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingApp, setEditingApp] = useState<ApplicationUI | null>(null);
-  const [selectedGrantId, setSelectedGrantId] = useState("");
   const [status, setStatus] = useState<string>("pending");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+
+  // Fetch user's applications on mount
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const token = sessionStorage.getItem("access_token");
+        if (!token) {
+          navigate("/");
+          return;
+        }
+
+        const response = await fetch("http://127.0.0.1:5000/api/user/applications", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setApplications(data.applications);
+        } else if (response.status === 401) {
+          // Token expired or invalid
+          sessionStorage.removeItem("user_id");
+          sessionStorage.removeItem("access_token");
+          navigate("/");
+        } else {
+          console.error("Failed to fetch applications");
+        }
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      }
+    };
+
+    fetchApplications();
+  }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem("user_id");
@@ -101,24 +101,35 @@ export function HomePage({ onViewDetails, onApply }) {
     navigate("/");
   };
 
-  const handleCreateApplication = () => {
-    const grant = MOCK_GRANTS.find((g) => g.id === selectedGrantId);
-    const newApp: ApplicationUI = {
-      application_id: crypto.randomUUID(),
-      user_id: "u1b2c3d4-e5f6-7890-1234-567890abcdef",
-      grant_id: selectedGrantId,
-      status,
-      application_date: new Date().toISOString().split("T")[0],
-      grant_name: grant?.name || "Unknown Grant",
-    };
-    setApplications([...applications, newApp]);
-    setIsNewDialogOpen(false);
-    setSelectedGrantId("");
-    setStatus("pending");
+  const handleViewDetails = (applicationId: string) => {
+    navigate(`/application/${applicationId}`);
   };
 
-  const handleDelete = (id: string) => {
-    setApplications(applications.filter((app) => app.application_id !== id));
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this application?")) {
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem("access_token");
+      const response = await fetch(`http://127.0.0.1:5000/api/user/applications/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setApplications(applications.filter((app) => app.application_id !== id));
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to delete application");
+      }
+    } catch (error) {
+      console.error("Error deleting application:", error);
+      alert("Failed to delete application");
+    }
   };
 
   const openEditDialog = (app: ApplicationUI) => {
@@ -127,16 +138,36 @@ export function HomePage({ onViewDetails, onApply }) {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateStatus = () => {
-    if (editingApp) {
-      setApplications(
-        applications.map((app) =>
-          app.application_id === editingApp.application_id ? { ...app, status } : app
-        )
-      );
-      setEditingApp(null);
-      setIsEditDialogOpen(false);
-      setStatus("pending");
+  const handleUpdateStatus = async () => {
+    if (!editingApp) return;
+
+    try {
+      const token = sessionStorage.getItem("access_token");
+      const response = await fetch(`http://127.0.0.1:5000/api/user/applications/${editingApp.application_id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (response.ok) {
+        setApplications(
+          applications.map((app) =>
+            app.application_id === editingApp.application_id ? { ...app, status } : app
+          )
+        );
+        setEditingApp(null);
+        setIsEditDialogOpen(false);
+        setStatus("pending");
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
     }
   };
 
@@ -202,62 +233,9 @@ export function HomePage({ onViewDetails, onApply }) {
             <CardDescription className="dark:text-slate-400">Manage your grant applications and track their status.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate("/searchGrants")}>
-              Find Grant to Apply
+            <Button onClick={() => navigate("/searchGrants")}>
+              <Plus className="mr-2 h-4 w-4" /> Find Grant to Apply
             </Button>
-            <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> New Application
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="dark:bg-slate-800 dark:border-slate-700">
-              <DialogHeader>
-                <DialogTitle className="dark:text-white">Create New Application</DialogTitle>
-                <DialogDescription className="dark:text-slate-400">
-                  Record a new grant application manually.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="grant" className="text-right dark:text-slate-300">
-                    Grant
-                  </Label>
-                  <Select value={selectedGrantId} onValueChange={setSelectedGrantId}>
-                    <SelectTrigger className="col-span-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                      <SelectValue placeholder="Select a grant" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                      {MOCK_GRANTS.map((grant) => (
-                        <SelectItem key={grant.id} value={grant.id} className="dark:text-white dark:focus:bg-slate-700">
-                          {grant.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="status" className="text-right dark:text-slate-300">
-                    Status
-                  </Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger className="col-span-3 dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                      <SelectItem value="pending" className="dark:text-white dark:focus:bg-slate-700">Pending</SelectItem>
-                      <SelectItem value="in_review" className="dark:text-white dark:focus:bg-slate-700">In Review</SelectItem>
-                      <SelectItem value="approved" className="dark:text-white dark:focus:bg-slate-700">Approved</SelectItem>
-                      <SelectItem value="rejected" className="dark:text-white dark:focus:bg-slate-700">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleCreateApplication} disabled={!selectedGrantId}>Save Application</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
           </div>
 
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -315,6 +293,7 @@ export function HomePage({ onViewDetails, onApply }) {
               <TableRow className="dark:border-slate-700">
                 <TableHead className="dark:text-slate-400">Grant Name</TableHead>
                 <TableHead className="dark:text-slate-400">Date Applied</TableHead>
+                <TableHead className="dark:text-slate-400">Type</TableHead>
                 <TableHead className="dark:text-slate-400">Status</TableHead>
                 <TableHead className="text-right dark:text-slate-400">Actions</TableHead>
               </TableRow>
@@ -322,28 +301,33 @@ export function HomePage({ onViewDetails, onApply }) {
             <TableBody>
               {filteredApplications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground dark:text-slate-500">
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground dark:text-slate-500">
                     No applications found.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredApplications.map((app) => (
                   <TableRow key={app.application_id} className="dark:border-slate-700">
-                    <TableCell className="font-medium dark:text-white">{app.grant_name}</TableCell>
-                    <TableCell className="dark:text-slate-300">{app.application_date}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium dark:text-white max-w-xs break-words whitespace-normal">{app.grant_name}</TableCell>
+                    <TableCell className="dark:text-slate-300 whitespace-nowrap">{app.application_date}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant={app.submission_status === "started" ? "outline" : "default"} className="dark:text-white">
+                        {app.submission_status === "started" ? "STARTED" : "SUBMITTED"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
                       <Badge className={`${getStatusColor(app.status)} text-slate-900 dark:text-white`}>
                         {app.status.replace('_', ' ').toUpperCase()}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => onViewDetails?.(app.application_id)}>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button variant="ghost" size="icon" onClick={() => handleViewDetails(app.application_id)} title={app.submission_status === "started" ? "Edit application" : "View application"}>
                         <Eye className="h-4 w-4 text-slate-500" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(app)}>
+                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(app)} title="Quick edit status">
                         <Edit className="h-4 w-4 text-blue-500" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(app.application_id)}>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(app.application_id)} title="Delete application">
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </TableCell>
