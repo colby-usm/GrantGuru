@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { useParams, Link } from "react-router-dom";
-import { ThemeToggle } from "./ThemeToggle";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -45,7 +44,6 @@ export function GrantDetailsPage() {
             <span className="dark:text-white text-lg font-semibold">Grant Details</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/homepage">
               <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">Home</button>
             </Link>

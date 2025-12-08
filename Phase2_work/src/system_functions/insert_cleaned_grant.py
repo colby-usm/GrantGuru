@@ -63,7 +63,6 @@ def main(cleaned_grants: list):
     cursor = None
     successful_insertions = 0
 
-    log_info("Connecting to MySQL server for insertion...")
 
     try:
         # --- 1. CONNECT TO DATABASE (with DB name specified) ---
@@ -76,24 +75,19 @@ def main(cleaned_grants: list):
         cursor = cnx.cursor()
 
         # --- 2. LOAD SQL Script ---
-        log_info(f"Loading insertion script from {INSERT_GRANT_SCRIPT}...")
         sql_insert = read_sql_helper(INSERT_GRANT_SCRIPT)
         if sql_insert is None:
             raise GrantOperationError(f"SQL script file not found: {INSERT_GRANT_SCRIPT}")
 
-        log_info(f"Loading selection script from {CHECK_IF_ALREADY_IN_DB_SCRIPT}...")
         sql_select = read_sql_helper(CHECK_IF_ALREADY_IN_DB_SCRIPT)
         if sql_select is None:
             raise GrantOperationError(f"SQL script file not found: {CHECK_IF_ALREADY_IN_DB_SCRIPT}")
 
-        log_info(f"Loading update script from {UPDATE_GRANT_SCRIPT}...")
         sql_update = read_sql_helper(UPDATE_GRANT_SCRIPT)
         if sql_update is None:
             raise GrantOperationError(f"SQL script file not found: {UPDATE_GRANT_SCRIPT}")
 
         # --- 3. EXECUTE INSERTION ---
-        log_info("Executing grant insertion...")
-
         if not cleaned_grants:
             log_info("No cleaned grants to insert. Exiting.")
             return 0
@@ -112,7 +106,6 @@ def main(cleaned_grants: list):
                     try:
                         cursor.execute(sql_insert, formatted_params)
                         successful_insertions += 1
-                        log_info("Grant inserted")
                     except MySQLError as db_e:
                         # Log detailed DB error and failing params for diagnosis, then re-raise to trigger rollback
                         err_info = {
@@ -215,13 +208,10 @@ def main(cleaned_grants: list):
         return GrantOperationError(e)
 
     finally:
-        # --- 5. GUARANTEE CONNECTION CLOSURE ---
         if cursor:
             cursor.close()
-            log_info("Cursor closed.")
         if cnx and cnx.is_connected():
             cnx.close()
-            log_info("Database connection closed.")
 
 
 
@@ -238,6 +228,5 @@ if __name__ == "__main__":
     with open(grants_file, "r", encoding="utf-8") as f:
         cleaned_grants = json.load(f)
 
-    inserted_count = main(cleaned_grants)
-    print(f"{inserted_count} grants inserted/updated")
+    main(cleaned_grants)
 

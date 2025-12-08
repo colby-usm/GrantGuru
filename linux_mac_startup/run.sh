@@ -1,10 +1,8 @@
 #!/bin/bash
-
 # GrantGuru Launcher Script
 # This script:
 # 1. Starts the Flask backend (T1)
 # 2. Starts the React frontend (T2)
-
 set -e  # Exit on error
 
 # Color codes for output
@@ -14,8 +12,13 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Get the script's directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Navigate to project root (one level up from linux_mac_startup)
+PROJECT_ROOT="$SCRIPT_DIR/.."
+
 # Project paths
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_PATH="$PROJECT_ROOT/.venv/bin/activate"
 PHASE2_DIR="$PROJECT_ROOT/Phase2_work"
 PHASE3_DIR="$PROJECT_ROOT/Phase3_work"
@@ -32,6 +35,7 @@ export FLASK_APP=api
 export FLASK_RUN_APP=api:create_app
 
 echo -e "${BLUE}=== GrantGuru Launcher ===${NC}"
+echo -e "${BLUE}Project root: $PROJECT_ROOT${NC}\n"
 
 # Verify virtual environment exists
 if [ ! -f "$VENV_PATH" ]; then
@@ -56,7 +60,6 @@ if [ ! -d "$UI_DIR" ]; then
 fi
 
 echo -e "${GREEN}✓ All paths verified${NC}\n"
-
 
 # Step 1: Launch Flask Backend
 echo -e "${YELLOW}Step 2: Launching Flask backend (T1)...${NC}"

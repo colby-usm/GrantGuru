@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-//import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import DOMPurify from "dompurify";
-import { ThemeToggle } from "./ThemeToggle";
-
 const API_BASE_URL = "http://127.0.0.1:5000";
 
 export function GrantsSearchPage() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Array<any>>([]);
   const [page, setPage] = useState<number>(1);
@@ -17,6 +15,12 @@ export function GrantsSearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [debugText, setDebugText] = useState<string | null>(null);
   const [statusCode, setStatusCode] = useState<number | null>(null);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("user_id");
+    sessionStorage.removeItem("access_token");
+    navigate("/");
+  };
 
   const fetchResults = async (q = "", p = 1) => {
     setError(null);
@@ -81,16 +85,16 @@ export function GrantsSearchPage() {
             <span className="dark:text-white text-lg font-semibold">Search Grants</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/homepage">
-              <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">Home</button>
+              <Button variant="ghost">Home</Button>
             </Link>
             <Link to="/searchGrants">
-              <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">Search Grants</button>
+              <Button variant="ghost">Search Grants</Button>
             </Link>
             <Link to="/user">
-              <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">User Settings</button>
+              <Button variant="ghost">User Settings</Button>
             </Link>
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
           </div>
         </div>
       </nav>

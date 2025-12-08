@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { Search, TrendingUp, Clock, Award } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { ThemeToggle } from "./ThemeToggle";
 import { AuthDialog } from "./AuthDialog";
 
 export function LandingPage() {
@@ -68,7 +67,6 @@ useEffect(() => {
             <span className="dark:text-white">GrantGuru</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Button variant="ghost" onClick={handleOpenLogin}>
               Log In
             </Button>

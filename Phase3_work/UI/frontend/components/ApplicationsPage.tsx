@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { ThemeToggle } from './ThemeToggle';
 
 const API_BASE_URL = 'http://127.0.0.1:5000';
 
@@ -135,7 +134,6 @@ export function ApplicationsPage() {
             <span className="dark:text-white text-lg font-semibold">My Applications</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
             </Link>

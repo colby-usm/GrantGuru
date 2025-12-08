@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from './ThemeToggle';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -221,7 +220,6 @@ const handlePasswordSubmit = async (e: React.FormEvent) => {
             <span className="dark:text-white text-lg font-semibold">User Settings</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             {/* Go to Home */}
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>

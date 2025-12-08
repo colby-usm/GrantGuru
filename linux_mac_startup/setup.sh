@@ -15,8 +15,13 @@ BLUE="\033[0;34m"
 RED="\033[0;31m"
 NC="\033[0m" # No color
 
-# Save absolute path to project root
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+# Get the script's directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Navigate to project root (one level up from linux_mac_startup)
+PROJECT_ROOT="$SCRIPT_DIR/.."
+cd "$PROJECT_ROOT"
+
 echo -e "${BLUE}Project root: $PROJECT_ROOT${NC}"
 
 echo -e "${BLUE}=== GrantGuru Initial Setup ===${NC}"
@@ -54,8 +59,6 @@ fi
 ###############################################################################
 
 echo -e "\n${BLUE}=== Python Environment Setup ===${NC}"
-
-cd "$PROJECT_ROOT"  # ensure script is run from project root
 
 if [ ! -d ".venv" ]; then
     echo -e "${YELLOW}Creating virtual environment...${NC}"
@@ -153,7 +156,7 @@ python3 -m src.system_functions.create_db_script
 
 status=$?
 if [ $status -eq 0 ]; then
-    echo -e "${GREEN}✓ Database created or already existed${NC}"
+    echo -e "${GREEN} Database created or already existed${NC}"
 else
     echo -e "${RED}✗ Database creation failed${NC}"
     exit 1
