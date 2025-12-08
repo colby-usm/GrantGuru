@@ -28,7 +28,7 @@ set "VENV_ACTIVATE=%PROJECT_ROOT%\.venv\Scripts\activate.bat"
 set "DB_NAME=GrantGuruDB"
 set "HOST=localhost"
 set "GG_USER=root"
-set "GG_PASS=woXp!^iw5ya^XnKT"
+set "GG_PASS=F8F6iVoAlcXnLPll"
 
 :: 2. Verify Prerequisites
 :: ==========================================

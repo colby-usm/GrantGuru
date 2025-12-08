@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 # Project paths
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV_PATH="$PROJECT_ROOT/.venv/scripts/activate"
+VENV_PATH="$PROJECT_ROOT/.venv/bin/activate"
 PHASE2_DIR="$PROJECT_ROOT/Phase2_work"
 PHASE3_DIR="$PROJECT_ROOT/Phase3_work"
 UI_DIR="$PHASE3_DIR/UI"
