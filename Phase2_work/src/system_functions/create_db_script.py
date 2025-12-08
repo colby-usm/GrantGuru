@@ -23,7 +23,7 @@ from src.utils.logging_utils import log_info, log_error
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
-MYSQL_PASS = os.getenv("GG_PASS", "")
+MYSQL_PASS = os.getenv("GG_PASS", "password")
 
 print(MYSQL_PASS)
 INSTANTIATE_DB_COMMAND = f"CREATE DATABASE `{DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"

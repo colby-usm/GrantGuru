@@ -20,7 +20,7 @@ load_dotenv(dotenv_path)
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
-MYSQL_PASS = "F8F6iVoAlcXnLPll" #os.getenv("GG_PASS", "")
+MYSQL_PASS = os.getenv("GG_PASS", "password")
 
 # ---- UTIL IMPORTS ----
 from src.user_functions.users_operations import (

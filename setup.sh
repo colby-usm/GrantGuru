@@ -3,7 +3,7 @@
 ###############################################################################
 # GrantGuru Full Setup Script
 # Sets up Python venv, installs dependencies, configures Node via fnm or npm,
-# and installs UI dependencies.
+# installs UI dependencies, and creates the database.
 ###############################################################################
 
 set -e  # Exit on real errors only
@@ -15,6 +15,10 @@ BLUE="\033[0;34m"
 RED="\033[0;31m"
 NC="\033[0m" # No color
 
+# Save absolute path to project root
+PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+echo -e "${BLUE}Project root: $PROJECT_ROOT${NC}"
+
 echo -e "${BLUE}=== GrantGuru Initial Setup ===${NC}"
 
 ###############################################################################
@@ -24,7 +28,7 @@ echo -e "${BLUE}=== GrantGuru Initial Setup ===${NC}"
 echo -e "\n${BLUE}Checking system prerequisites...${NC}"
 
 # Python 3.12
-if ! command -v python >/dev/null 2>&1; then
+if ! command -v python3.12 >/dev/null 2>&1; then
     echo -e "${RED}✗ Python 3.12 not found. Install Python 3.12 and retry.${NC}"
     exit 1
 else
@@ -51,19 +55,18 @@ fi
 
 echo -e "\n${BLUE}=== Python Environment Setup ===${NC}"
 
-cd "$(dirname "$0")"  # ensure script is run from project root
+cd "$PROJECT_ROOT"  # ensure script is run from project root
 
 if [ ! -d ".venv" ]; then
     echo -e "${YELLOW}Creating virtual environment...${NC}"
-    python -m venv .venv
+    python3.12 -m venv .venv
     echo -e "${GREEN}✓ Virtual environment created${NC}"
 else
     echo -e "${GREEN}✓ Virtual environment already exists, skipping${NC}"
 fi
 
 echo -e "${YELLOW}Activating virtual environment...${NC}"
-# shellcheck disable=SC1091
-source .venv/Scripts/activate
+source .venv/bin/activate
 
 echo -e "${YELLOW}Installing Python dependencies...${NC}"
 pip install -r requirements.txt
@@ -98,7 +101,7 @@ fi
 
 echo -e "\n${BLUE}=== Installing UI Dependencies ===${NC}"
 
-UI_DIR="Phase3_work/UI"
+UI_DIR="$PROJECT_ROOT/Phase3_work/UI"
 
 if [ ! -d "$UI_DIR" ]; then
     echo -e "${RED}✗ UI directory $UI_DIR not found.${NC}"
@@ -112,8 +115,89 @@ npm install
 echo -e "${GREEN}✓ npm dependencies installed${NC}"
 
 ###############################################################################
+# 5. Create Database
+###############################################################################
+
+echo -e "\n${BLUE}=== Database Setup ===${NC}"
+
+# Navigate back to project root
+cd "$PROJECT_ROOT"
+
+PHASE2_DIR="$PROJECT_ROOT/Phase2_work"
+
+if [ ! -d "$PHASE2_DIR" ]; then
+    echo -e "${RED}✗ Phase2_work directory not found at $PHASE2_DIR${NC}"
+    exit 1
+fi
+
+cd "$PHASE2_DIR"
+
+# Default environment variables if not already set
+export DB_NAME="${DB_NAME:-GrantGuruDB}"
+export GG_USER="${GG_USER:-root}"
+export GG_PASS="${GG_PASS:-password}"
+export HOST="${HOST:-localhost}"
+
+echo -e "${YELLOW}Creating database ${DB_NAME}...${NC}"
+
+# Ensure virtual environment is activated
+if [ -f "$PROJECT_ROOT/.venv/bin/activate" ]; then
+    source "$PROJECT_ROOT/.venv/bin/activate"
+else
+    echo -e "${RED}✗ Virtual environment not found, cannot create database${NC}"
+    exit 1
+fi
+
+# Run the database creation script
+python3 -m src.system_functions.create_db_script
+
+status=$?
+if [ $status -eq 0 ]; then
+    echo -e "${GREEN}✓ Database created or already existed${NC}"
+else
+    echo -e "${RED}✗ Database creation failed${NC}"
+    exit 1
+fi
+
+
+
+###############################################################################
+# 6. Insert cleaned grant data into the database
+###############################################################################
+
+echo -e "\n${BLUE}=== Inserting demo grants into database ===${NC}"
+
+cd "$PROJECT_ROOT/Phase2_work"
+
+GRANTS_JSON="src/test_suites/grants_data.json"
+INSERT_MODULE="src.system_functions.insert_cleaned_grant"
+
+if [ ! -f "$GRANTS_JSON" ]; then
+    echo -e "${RED}✗ Grants JSON file not found at $GRANTS_JSON${NC}"
+    exit 1
+fi
+
+echo -e "${YELLOW}Running insertion module $INSERT_MODULE...${NC}"
+
+# Activate virtual environment
+source "$PROJECT_ROOT/.venv/bin/activate"
+
+python3 -m "$INSERT_MODULE" "$GRANTS_JSON"
+
+if ! [ $? -eq 0 ]; then
+    echo -e "${RED}✗ Grant insertion failed${NC}"
+    exit 1
+fi
+###############################################################################
 # DONE
 ###############################################################################
 
 echo -e "\n${GREEN}=== GrantGuru Setup Complete! ===${NC}"
 echo -e "${GREEN}You may now run your launcher or development servers.${NC}"
+
+
+echo -e "\n${GREEN}=== GrantGuru Credentials! ===${NC}"
+echo -e "User:     ${GREEN}$GG_USER${NC}"
+echo -e "Password: ${GREEN}$GG_PASS${NC}"
+echo -e "Database: ${GREEN}$DB_NAME${NC}"
+echo -e "Host:     ${GREEN}$HOST${NC}"

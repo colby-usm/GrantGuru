@@ -1,95 +1,87 @@
-@echo off
+#!/bin/bash
 
-set "GG_PASS=woXp!^iw5ya^XnKT"
-setlocal EnableDelayedExpansion
-TITLE GrantGuru Environment Reset
+###############################################################################
+# GrantGuru — Reset Environment Script
+# Completely resets the local development environment:
+# - Activates .venv from GrantGuru/ (if present)
+# - Deletes the database using the Phase2 delete_db_script module
+# - Removes Python virtual environment (.venv)
+# - Removes frontend node_modules
+# - Removes Python cache directories
+#
+# After running this script, run:
+#   ./setup.sh
+# to rebuild everything from scratch.
+###############################################################################
 
-echo ======================================
-echo   GrantGuru - Reset Environment
-echo ======================================
-echo.
+set -e
 
-:: 1. Setup Paths & Credentials
-:: ==========================================
-set "PROJECT_ROOT=%~dp0"
-:: Remove trailing backslash if present
-if "%PROJECT_ROOT:~-1%"=="\" set "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
+echo ""
+echo "======================================"
+echo "   GrantGuru — Reset Environment"
+echo "======================================"
+echo ""
 
-set "VENV_DIR=%PROJECT_ROOT%\.venv"
-set "VENV_ACTIVATE=%VENV_DIR%\Scripts\activate.bat"
-set "PHASE2_DIR=%PROJECT_ROOT%\Phase2_work"
-set "NODE_MODULES=%PROJECT_ROOT%\Phase3_work\UI\frontend\node_modules"
+# Ensure we are in the project root
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 
-:: DB CREDENTIALS
-set "DB_NAME=GrantGuruDB"
-set "HOST=localhost"
-set "GG_USER=root"
+###############################################################
+# STEP 1: Source virtual environment if it exists
+###############################################################
+if [ -d ".venv" ]; then
+    echo "[+] Activating .venv ..."
+    source .venv/bin/activate
+else
+    echo "[!] No .venv found — skipping activation."
+fi
 
-:: 2. Run DB Deletion Script
-:: ==========================================
-echo [Step 1] Deleting Database...
+###############################################################
+# STEP 2: Run the DB deletion module
+###############################################################
+if [ -f "Phase2_work/src/system_functions/delete_db_script.py" ]; then
+    echo "[+] Running DB deletion script ..."
+    # Must be run from inside Phase2_work/src
+    pushd Phase2_work >/dev/null
+    python -m src.system_functions.delete_db_script
+    popd >/dev/null
+else
+    echo "[!] Database deletion script not found — skipping."
+fi
 
-if exist "!VENV_ACTIVATE!" (
-    call "!VENV_ACTIVATE!"
-    
-    if exist "!PHASE2_DIR!\src\system_functions\delete_db_script.py" (
-        cd "!PHASE2_DIR!"
-        echo    Running Python deletion script...
-        
-        python -m src.system_functions.delete_db_script
-        
-        if !ERRORLEVEL! EQU 0 (
-            echo    Database deleted successfully.
-        ) else (
-            echo    Database deletion failed ^(or DB did not exist^).
-        )
-        :: Return to root
-        cd "!PROJECT_ROOT!"
-    ) else (
-        echo    Could not find delete_db_script.py
-    )
-) else (
-    echo    No virtual environment found. Skipping DB deletion.
-)
+###############################################################
+# STEP 3: Remove Python virtual environment
+###############################################################
+if [ -d ".venv" ]; then
+    echo "[+] Removing .venv ..."
+    rm -rf .venv
+else
+    echo "[!] No .venv to remove."
+fi
 
-:: 3. Remove Virtual Environment
-:: ==========================================
-echo.
-echo [Step 2] Removing .venv folder...
-if exist "!VENV_DIR!" (
-    rmdir /s /q "!VENV_DIR!"
-    echo    .venv removed.
-) else (
-    echo    .venv not found.
-)
+###############################################################
+# STEP 4: Remove Node dependencies
+###############################################################
+FRONTEND_DIR="Phase3_work/UI/frontend/node_modules"
 
-:: 4. Remove Node Modules
-:: ==========================================
-echo.
-echo [Step 3] Removing node_modules...
-if exist "!NODE_MODULES!" (
-    rmdir /s /q "!NODE_MODULES!"
-    echo    node_modules removed.
-) else (
-    echo    node_modules not found.
-)
+if [ -d "$FRONTEND_DIR" ]; then
+    echo "[+] Removing frontend node_modules ..."
+    rm -rf "$FRONTEND_DIR"
+else
+    echo "[!] No node_modules found in frontend."
+fi
 
-:: 5. Clear Python Cache
-:: ==========================================
-echo.
-echo [Step 4] Cleaning up __pycache__...
-for /d /r . %%d in (__pycache__) do @if exist "%%d" (
-    echo    Removing "%%d"
-    rd /s /q "%%d"
-)
-echo    Cache cleared.
+###############################################################
+# STEP 5: Clear Python cache files
+###############################################################
+echo "[+] Removing Python __pycache__ directories ..."
+find . -type d -name "__pycache__" -exec rm -rf {} +
 
-echo.
-echo ======================================
-echo  Environment Reset Complete
-echo ======================================
-echo.
-echo Next steps:
-echo    Run setup.sh to rebuild everything.
-echo.
-pause
+echo ""
+echo "======================================"
+echo " Environment Reset Complete"
+echo "======================================"
+echo ""
+echo "Next steps:"
+echo "  → Run ./setup.sh to rebuild everything."
+echo ""

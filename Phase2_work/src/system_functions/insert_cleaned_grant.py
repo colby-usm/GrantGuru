@@ -53,7 +53,7 @@ def main(cleaned_grants: list):
     DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
     HOST = os.getenv("HOST", "localhost")
     MYSQL_USER = os.getenv("GG_USER", "root")
-    MYSQL_PASS = os.getenv("GG_PASS", "")
+    MYSQL_PASS = os.getenv("GG_PASS", "password")
 
     INSERT_GRANT_SCRIPT = "src/db_crud/grants/create_grants.sql"
     CHECK_IF_ALREADY_IN_DB_SCRIPT = "src/db_crud/grants/select_grants_by_opportunity_number.sql"
@@ -102,7 +102,6 @@ def main(cleaned_grants: list):
         for grants in cleaned_grants:
             try:
                 formatted_params = format_grant_data_for_insert(grants)
-
                 opportunity_id = (formatted_params.get("opportunity_number"),)
 
                 cursor.execute(sql_select, opportunity_id)
@@ -223,3 +222,22 @@ def main(cleaned_grants: list):
         if cnx and cnx.is_connected():
             cnx.close()
             log_info("Database connection closed.")
+
+
+
+
+if __name__ == "__main__":
+    import sys
+    import json
+
+    if len(sys.argv) < 2:
+        print("Usage: python -m src.system_functions.insert_cleaned_grant <grants_json_file>")
+        sys.exit(1)
+
+    grants_file = sys.argv[1]
+    with open(grants_file, "r", encoding="utf-8") as f:
+        cleaned_grants = json.load(f)
+
+    inserted_count = main(cleaned_grants)
+    print(f"{inserted_count} grants inserted/updated")
+
