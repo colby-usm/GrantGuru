@@ -104,7 +104,6 @@ def main(scrape_dict, filter_on_dates=None):
 
     #dirty_grant_list = args[0]["grants"]
 
-
     cleaned_grants = []
     dirty_grant_list = scrape_dict["grants"]
 

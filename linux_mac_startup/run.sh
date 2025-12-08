@@ -25,10 +25,10 @@ PHASE3_DIR="$PROJECT_ROOT/Phase3_work"
 UI_DIR="$PHASE3_DIR/UI"
 
 # Environment variables
-export DB_NAME="${DB_NAME:-GrantGuruDB}"
-export HOST="${HOST:-localhost}"
-export GG_USER="${GG_USER:-root}"
-export GG_PASS="${GG_PASS:-password}"
+export DB_NAME="GrantGuruDB"
+export HOST="localhost"
+export GG_USER="admin"
+export GG_PASS="admin"
 
 # Flask variables
 export FLASK_APP=api

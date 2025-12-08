@@ -136,10 +136,10 @@ fi
 cd "$PHASE2_DIR"
 
 # Default environment variables if not already set
-export DB_NAME="${DB_NAME:-GrantGuruDB}"
-export GG_USER="${GG_USER:-root}"
-export GG_PASS="${GG_PASS:-password}"
-export HOST="${HOST:-localhost}"
+export DB_NAME="GrantGuruDB"
+export GG_USER="admin"
+export GG_PASS="admin"
+export HOST="localhost"
 
 echo -e "${YELLOW}Creating database ${DB_NAME}...${NC}"
 
