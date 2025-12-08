@@ -1,5 +1,5 @@
 /* Application Deletion Script for Applications Table
-Version: 10 November 2025
+Version: 15 November 2025
 Author: Abdullahi Abdullahi
 Description:
  Delet based on user_id and grant_id
@@ -9,5 +9,5 @@ Description:
 */
 
 DELETE FROM Applications
-WHERE user_id = %(user_id)s AND grant_id = %(grant_id)s;
+WHERE user_id = UUID_TO_BIN(%(user_id)s) AND grant_id = UUID_TO_BIN(%(grant_id)s);
 

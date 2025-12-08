@@ -241,70 +241,69 @@ const handlePasswordSubmit = async (e: React.FormEvent) => {
       </nav>
 
 
-     <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="h-8"></div>
-        <div className="flex flex-col gap-12">
+     <main className="flex-1 container mx-auto px-4 py-10">
+        <div className="max-w-3xl mx-auto space-y-6">
           {/* Personal Info Form */}
-		<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
-		  <div className="h-4"></div>
-		  <h2 className="text-2xl dark:text-white">&nbsp;Update Personal Info</h2>
-		  <form className="space-y-6" onSubmit={handlePersonalInfoSubmit}>
-		    <div>
-		      <Label htmlFor="fName">&nbsp;First Name</Label>
-		      <Input name="fName" value={personalInfo.fName} onChange={handlePersonalInfoChange} />
-		    </div>
-		    <div>
-		      <Label htmlFor="mName">&nbsp;Middle Name</Label>
-		      <Input name="mName" value={personalInfo.mName} onChange={handlePersonalInfoChange} />
-		    </div>
-		    <div>
-		      <Label htmlFor="lName">&nbsp;Last Name</Label>
-		      <Input name="lName" value={personalInfo.lName} onChange={handlePersonalInfoChange} />
-		    </div>
-		    <div>
-		      <Label htmlFor="institution">&nbsp;Organization</Label>
-		      <Input name="institution" value={personalInfo.institution} onChange={handlePersonalInfoChange} />
-		    </div>
-		    <Button type="submit">Save Personal Info</Button>
-		    <div className="h-4"></div>
-		  </form>
-		</Card>
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <div className="p-6 space-y-6">
+              <h2 className="text-2xl font-semibold dark:text-white">Update Personal Info</h2>
+              <form className="space-y-6" onSubmit={handlePersonalInfoSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="fName">First Name</Label>
+                  <Input name="fName" value={personalInfo.fName} onChange={handlePersonalInfoChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="mName">Middle Name</Label>
+                  <Input name="mName" value={personalInfo.mName} onChange={handlePersonalInfoChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lName">Last Name</Label>
+                  <Input name="lName" value={personalInfo.lName} onChange={handlePersonalInfoChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="institution">Organization</Label>
+                  <Input name="institution" value={personalInfo.institution} onChange={handlePersonalInfoChange} />
+                </div>
+                <Button type="submit">Save Personal Info</Button>
+              </form>
+            </div>
+          </Card>
 
           {/* Email Update Form */}
-	<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
-	  <div className="h-4"></div>
-	  <h2 className="text-2xl dark:text-white">&nbsp;Update Email</h2>
-	  <form className="space-y-6" onSubmit={handleEmailSubmit}>
-	    <div>
-	      <Label htmlFor="email">&nbsp;Email</Label>
-	      <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
-	    </div>
-	    <Button type="submit">Save Email</Button>
-	    <div className="h-4"></div>
-	  </form>
-	</Card>
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <div className="p-6 space-y-6">
+              <h2 className="text-2xl font-semibold dark:text-white">Update Email</h2>
+              <form className="space-y-6" onSubmit={handleEmailSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input name="email" type="email" value={emailInfo.email} onChange={handleEmailChange} />
+                </div>
+                <Button type="submit">Save Email</Button>
+              </form>
+            </div>
+          </Card>
 
           {/* Password Update Form */}
-	<Card className="p-8 space-y-2 dark:bg-slate-800 dark:border-slate-700">
-	  <div className="h-4"></div>
-	  <h2 className="text-2xl dark:text-white">&nbsp;Update Password</h2>
-	  <form className="space-y-6" onSubmit={handlePasswordSubmit}>
-	    <div>
-	      <Label htmlFor="oldPassword">&nbsp;Old Password</Label>
-	      <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
-	    </div>
-	    <div>
-	      <Label htmlFor="newPassword">&nbsp;New Password</Label>
-	      <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
-	    </div>
-	    <div>
-	      <Label htmlFor="confirmPassword">&nbsp;Confirm New Password</Label>
-	      <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
-	    </div>
-	    <Button type="submit">Save Password</Button>
-	    <div className="h-4"></div>
-	  </form>
-	</Card>
+          <Card className="dark:bg-slate-800 dark:border-slate-700">
+            <div className="p-6 space-y-6">
+              <h2 className="text-2xl font-semibold dark:text-white">Update Password</h2>
+              <form className="space-y-6" onSubmit={handlePasswordSubmit}>
+                <div className="space-y-2">
+                  <Label htmlFor="oldPassword">Old Password</Label>
+                  <Input name="oldPassword" type="password" value={passwordInfo.oldPassword} onChange={handlePasswordChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input name="newPassword" type="password" value={passwordInfo.newPassword} onChange={handlePasswordChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input name="confirmPassword" type="password" value={passwordInfo.confirmPassword} onChange={handlePasswordChange} />
+                </div>
+                <Button type="submit">Save Password</Button>
+              </form>
+            </div>
+          </Card>
         </div>
       </main>
 

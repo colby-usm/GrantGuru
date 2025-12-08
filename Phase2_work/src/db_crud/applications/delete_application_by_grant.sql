@@ -1,6 +1,6 @@
 /*
 Application Deletion Script for Applications Table
-Version: 10 November 2025
+Version: 15 November 2025
 Author: Abdullahi Abdullahi
 Description:
  Delete all the applications for a specific grant 
@@ -8,4 +8,4 @@ Description:
         - grant_id: The unique identifier of the grant (required)
 */
 DELETE FROM Applications
-WHERE grant_id = %(grant_id)s;
+WHERE grant_id = UUID_TO_BIN(%(grant_id)s);
