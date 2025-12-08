@@ -25,7 +25,7 @@ HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "")
 
-
+print(MYSQL_PASS)
 INSTANTIATE_DB_COMMAND = f"CREATE DATABASE `{DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 BUILD_DIR = Path("src/db_creation/create_relations_commands")
 
@@ -48,6 +48,7 @@ def execute_sql_file(cursor, sql_file: Path):
 
 if __name__ == "__main__":
     cnx = None
+    print(MYSQL_PASS)
     try:
         cnx = mysql.connector.connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS)
         cursor = cnx.cursor()

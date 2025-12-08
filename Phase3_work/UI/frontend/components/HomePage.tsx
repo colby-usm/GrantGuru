@@ -172,6 +172,10 @@ export function HomePage({ onViewDetails, onApply }) {
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
             </Link>
+            {/* Search Grants */}
+            <Link to="/searchGrants">
+              <Button variant="ghost">Search Grants</Button>
+            </Link>
             {/* User Settings */}
             <Link to="/user">
               <Button variant="ghost">User Settings</Button>
@@ -198,9 +202,7 @@ export function HomePage({ onViewDetails, onApply }) {
             <CardDescription className="dark:text-slate-400">Manage your grant applications and track their status.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onApply}
-	      onClick={() => navigate("/grantApply")}
-	      >
+            <Button variant="outline" onClick={() => navigate("/searchGrants")}>
               Find Grant to Apply
             </Button>
             <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>

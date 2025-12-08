@@ -79,6 +79,7 @@ def signup():
     conn = None
     cursor = None
     try:
+        print(MYSQL_PASS)
         conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)
         cursor = conn.cursor()
 
