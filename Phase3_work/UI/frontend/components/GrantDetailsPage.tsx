@@ -79,8 +79,8 @@ export function GrantDetailsPage() {
         </dl>
         {grant.link_to_source && (
           <p>
-            <a href={grant.link_to_source} target="_blank" rel="noreferrer" className="text-blue-600">
-              View original posting
+            <a href={grant.link_to_source} target="_blank" rel="noreferrer" className="text-blue-600 break-all hover:underline">
+              {grant.link_to_source}
             </a>
           </p>
         )}

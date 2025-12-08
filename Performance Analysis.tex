@@ -1,0 +1,17 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{Performance Analysis and Optimization Report}
+\author{James Tedder}
+\date{December 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Scraper}
+
+One of the main bottlenecks for our project was the scraper. It scraped grants using the grants.gov API. This API limits how many requests you can make in a given period of time. We had originally planned to have on demand scraping where we would allow the user to trigger a scrape to get the most up to date information. This proved to be unrealistic as the requests to the api can take upwards of 40 mins. This is why we decided to instead opt for daily scraping. This should give us the level of accuracy we need while not having egregious wait times.
+
+
+\end{document}
