@@ -2,7 +2,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { ThemeToggle } from "./ThemeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import {
   Table,
@@ -198,7 +197,6 @@ export function HomePage() {
             <span className="dark:text-white text-lg font-semibold">Home</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             {/* Go to Home */}
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>

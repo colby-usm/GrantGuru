@@ -2,9 +2,8 @@
 
 # GrantGuru Launcher Script
 # This script:
-# 1. Creates the database (if needed)
-# 2. Starts the Flask backend (T1)
-# 3. Starts the React frontend (T2)
+# 1. Starts the Flask backend (T1)
+# 2. Starts the React frontend (T2)
 
 set -e  # Exit on error
 
@@ -13,7 +12,7 @@ GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 # Project paths
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,7 +25,7 @@ UI_DIR="$PHASE3_DIR/UI"
 export DB_NAME="${DB_NAME:-GrantGuruDB}"
 export HOST="${HOST:-localhost}"
 export GG_USER="${GG_USER:-root}"
-export GG_PASS="${GG_PASS:-Sully2022!}"
+export GG_PASS="${GG_PASS:-password}"
 
 # Flask variables
 export FLASK_APP=api
@@ -58,22 +57,8 @@ fi
 
 echo -e "${GREEN}✓ All paths verified${NC}\n"
 
-# Step 1: Create database
-echo -e "${YELLOW}Step 1: Creating database...${NC}"
-source "$VENV_PATH"
-cd "$PHASE2_DIR"
-python3 -m src.system_functions.create_db_script
 
-status=$?
-
-if [ $status -eq 0 ]; then
-    echo -e "${GREEN}✓ Database exists or created successfully${NC}\n"
-else
-    echo -e "${RED}✗ Database creation failed${NC}"
-    exit 1
-fi
-
-# Step 2: Launch Flask Backend
+# Step 1: Launch Flask Backend
 echo -e "${YELLOW}Step 2: Launching Flask backend (T1)...${NC}"
 osascript <<EOF
 tell application "Terminal"
@@ -82,7 +67,6 @@ tell application "Terminal"
 end tell
 EOF
 
-# Wait a moment before launching second terminal
 sleep 2
 
 # Step 3: Launch React Frontend

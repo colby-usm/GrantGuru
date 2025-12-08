@@ -53,7 +53,7 @@ def main(cleaned_grants: list):
     DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
     HOST = os.getenv("HOST", "localhost")
     MYSQL_USER = os.getenv("GG_USER", "root")
-    MYSQL_PASS = os.getenv("GG_PASS", "")
+    MYSQL_PASS = os.getenv("GG_PASS", "password")
 
     INSERT_GRANT_SCRIPT = "src/db_crud/grants/create_grants.sql"
     CHECK_IF_ALREADY_IN_DB_SCRIPT = "src/db_crud/grants/select_grants_by_opportunity_number.sql"
@@ -63,7 +63,6 @@ def main(cleaned_grants: list):
     cursor = None
     successful_insertions = 0
 
-    log_info("Connecting to MySQL server for insertion...")
 
     try:
         # --- 1. CONNECT TO DATABASE (with DB name specified) ---
@@ -76,24 +75,19 @@ def main(cleaned_grants: list):
         cursor = cnx.cursor()
 
         # --- 2. LOAD SQL Script ---
-        log_info(f"Loading insertion script from {INSERT_GRANT_SCRIPT}...")
         sql_insert = read_sql_helper(INSERT_GRANT_SCRIPT)
         if sql_insert is None:
             raise GrantOperationError(f"SQL script file not found: {INSERT_GRANT_SCRIPT}")
-
-        log_info(f"Loading selection script from {CHECK_IF_ALREADY_IN_DB_SCRIPT}...")
+        
         sql_select = read_sql_helper(CHECK_IF_ALREADY_IN_DB_SCRIPT)
         if sql_select is None:
             raise GrantOperationError(f"SQL script file not found: {CHECK_IF_ALREADY_IN_DB_SCRIPT}")
-
-        log_info(f"Loading update script from {UPDATE_GRANT_SCRIPT}...")
+        
         sql_update = read_sql_helper(UPDATE_GRANT_SCRIPT)
         if sql_update is None:
             raise GrantOperationError(f"SQL script file not found: {UPDATE_GRANT_SCRIPT}")
 
         # --- 3. EXECUTE INSERTION ---
-        log_info("Executing grant insertion...")
-
         if not cleaned_grants:
             log_info("No cleaned grants to insert. Exiting.")
             return 0
@@ -102,7 +96,6 @@ def main(cleaned_grants: list):
         for grants in cleaned_grants:
             try:
                 formatted_params = format_grant_data_for_insert(grants)
-
                 opportunity_id = (formatted_params.get("opportunity_number"),)
 
                 cursor.execute(sql_select, opportunity_id)
@@ -113,7 +106,6 @@ def main(cleaned_grants: list):
                     try:
                         cursor.execute(sql_insert, formatted_params)
                         successful_insertions += 1
-                        log_info("Grant inserted")
                     except MySQLError as db_e:
                         # Log detailed DB error and failing params for diagnosis, then re-raise to trigger rollback
                         err_info = {
@@ -216,10 +208,33 @@ def main(cleaned_grants: list):
         return GrantOperationError(e)
 
     finally:
-        # --- 5. GUARANTEE CONNECTION CLOSURE ---
         if cursor:
             cursor.close()
-            log_info("Cursor closed.")
         if cnx and cnx.is_connected():
             cnx.close()
-            log_info("Database connection closed.")
+
+
+
+
+if __name__ == "__main__":
+    import sys
+    import json
+
+    if len(sys.argv) < 2:
+        print("Usage: python -m src.system_functions.insert_cleaned_grant <grants_json_file>")
+        sys.exit(1)
+
+    grants_file = sys.argv[1]
+    try:
+        with open(grants_file, "r", encoding="utf-8") as f:
+            cleaned_grants = json.load(f)
+    except Exception as e:
+        print(f"Error loading JSON file {grants_file}: {e}")
+        sys.exit(1)
+
+    result = main(cleaned_grants)
+    if result is None or isinstance(result, int):
+        sys.exit(0)
+    else:
+        print(f"✗ Grant insertion failed: {result}")
+        sys.exit(1)

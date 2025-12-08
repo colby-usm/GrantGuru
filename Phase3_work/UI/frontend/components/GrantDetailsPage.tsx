@@ -8,7 +8,6 @@ import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Calendar, CheckCircle2, LinkIcon, Upload, AlertCircle, X, Building2 } from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -222,7 +221,6 @@ export function GrantDetailsPage() {
             <span className="dark:text-white text-lg font-semibold">Grant Details & Application</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
             </Link>
