@@ -9,7 +9,6 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Calendar, CheckCircle2, FileText, Link as LinkIcon, Upload, AlertCircle, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { ThemeToggle } from "./ThemeToggle";
 
 // --- Interfaces based on Schema ---
 
@@ -161,7 +160,6 @@ export function GrantApplyPage() {
             <span className="dark:text-white text-lg font-semibold">Apply for Grant</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
             </Link>

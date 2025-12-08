@@ -20,7 +20,7 @@ load_dotenv(dotenv_path)
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
-MYSQL_PASS = "F8F6iVoAlcXnLPll" #os.getenv("GG_PASS", "")
+MYSQL_PASS = os.getenv("GG_PASS", "password")
 
 # ---- UTIL IMPORTS ----
 from src.user_functions.users_operations import (
@@ -41,7 +41,6 @@ def create_app():
     app = Flask(__name__)
     app.config["JWT_SECRET_KEY"] = "dev-secret-key-change-this"  # TODO get rid of this
 
-    # Allow common frontend dev origins (Vite default 5173, CRA 3000) for development
     CORS(
         app,
         supports_credentials=True,
@@ -58,9 +57,11 @@ def create_app():
     from api.auth import auth_bp
     from api.public import public_bp
     from api.user import user_bp
+    from api.applications import applications_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(public_bp, url_prefix="/api/public")
     app.register_blueprint(user_bp, url_prefix="/api/user")
+    app.register_blueprint(applications_bp, url_prefix="/api/applications")
 
     return app

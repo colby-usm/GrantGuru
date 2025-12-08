@@ -11,6 +11,8 @@
         Routes:
             - /aggregate-grants: Returns the total funding of all grants.
             - /fetch_grant_count: Returns the total number of grants in the database.
+            - /search_grants: Search grants by query string with pagination.
+            - /grant/<grant_id>: Get full details of a specific grant.
 
 """
 

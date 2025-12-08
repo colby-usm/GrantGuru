@@ -32,6 +32,7 @@
             "class-variance-authority": "^0.7.1",
             "clsx": "*",
             "cmdk": "^1.1.1",
+	    "dompurify": "^3.2.2",
             "embla-carousel-react": "^8.6.0",
             "input-otp": "^1.4.2",
             "lucide-react": "^0.487.0",
@@ -45,7 +46,8 @@
             "recharts": "^2.15.2",
             "sonner": "^2.0.3",
             "tailwind-merge": "*",
-            "vaul": "^1.1.2"
+            "vaul": "^1.1.2",
+	    "dompurify": "^3.0.5"
       },
       "devDependencies": {
             "@types/node": "^20.10.0",

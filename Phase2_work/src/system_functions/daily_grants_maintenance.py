@@ -17,7 +17,7 @@ from src.system_functions.insert_cleaned_grant import main as insert_script
             4. Runs insert_script() to insert all new Grants to DB
 '''
 
-SCRAPE_PERIOD_DAYS = 365
+SCRAPE_PERIOD_DAYS = 10000
 from src.utils.logging_utils import log_info, log_error, log_warning
 
 
@@ -30,7 +30,7 @@ def daily_operations():
     log_info("Starting daily scraper scheduler...")
     dirty_grant_dict = scraper_script([
         "--statuses", "posted"  # we can add other filters here
-        #,"-n", "100"  # FOR TESTING ONLY
+        #"-n", "100"  # FOR TESTING
     ])
 
     # scraper_script returns None when no IDs are found or an error occurred
@@ -51,12 +51,11 @@ if __name__ == "__main__":
     parser.add_argument("--at", type=str, default="00:00", help="Time to run daily in HH:MM (24h) format, default 00:00")
     args = parser.parse_args()
 
-    if args.once:
-        try:
-            daily_operations()
-        except Exception as e:
-            log_error(f"Error during one-time daily operations: {e}")
-        raise SystemExit(0)
+    try:
+        daily_operations()
+    except Exception as e:
+        log_error(f"Error during one-time daily operations: {e}")
+    raise SystemExit(0)
 
     # Schedule daily run at the specified time (local system time)
     run_time = args.at

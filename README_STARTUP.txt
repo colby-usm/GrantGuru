@@ -45,7 +45,7 @@ Before running these scripts, ensure you have:
 
 3. **MySQL Database** configured with:
    - Username: root
-   - Password: Kappa20205!
+   - Password: 
    - Database: GrantGuruDB
    - Host: 127.0.0.1
 
