@@ -24,7 +24,7 @@ echo -e "${BLUE}=== GrantGuru Initial Setup ===${NC}"
 echo -e "\n${BLUE}Checking system prerequisites...${NC}"
 
 # Python 3.12
-if ! command -v python3.12 >/dev/null 2>&1; then
+if ! command -v python >/dev/null 2>&1; then
     echo -e "${RED}✗ Python 3.12 not found. Install Python 3.12 and retry.${NC}"
     exit 1
 else
@@ -53,9 +53,9 @@ echo -e "\n${BLUE}=== Python Environment Setup ===${NC}"
 
 cd "$(dirname "$0")"  # ensure script is run from project root
 
-if [ ! -d "venv" ]; then
+if [ ! -d ".venv" ]; then
     echo -e "${YELLOW}Creating virtual environment...${NC}"
-    python3.12 -m venv .venv
+    python -m venv .venv
     echo -e "${GREEN}✓ Virtual environment created${NC}"
 else
     echo -e "${GREEN}✓ Virtual environment already exists, skipping${NC}"
@@ -63,7 +63,7 @@ fi
 
 echo -e "${YELLOW}Activating virtual environment...${NC}"
 # shellcheck disable=SC1091
-source .venv/bin/activate
+source .venv/Scripts/activate
 
 echo -e "${YELLOW}Installing Python dependencies...${NC}"
 pip install -r requirements.txt
