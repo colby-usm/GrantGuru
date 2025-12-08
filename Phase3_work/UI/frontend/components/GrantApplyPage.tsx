@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -71,13 +72,22 @@ const formatDate = (dateString?: string) => {
 };
 
 export function GrantApplyPage() {
+  const navigate = useNavigate();
   const [grant] = useState<Grant>(MOCK_GRANT);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   // Form State
   const [applicantName, setApplicantName] = useState("");
   const [applicantEmail, setApplicantEmail] = useState("");
+
+  const handleLogout = () => {
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('access_token');
+    sessionStorage.removeItem('user_id');
+    sessionStorage.removeItem('access_token');
+    navigate('/');
+  };
   
   // Document Uploads State
   const [documents, setDocuments] = useState<DocumentUpload[]>([
@@ -142,28 +152,51 @@ export function GrantApplyPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4 space-y-8 max-w-5xl">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Grants</span>
-          <span>/</span>
-          <span>{grant.research_field}</span>
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+      {/* Navigation Header */}
+      <nav className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 dark:border-slate-800">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="dark:text-white text-lg font-semibold">Apply for Grant</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link to="/homepage">
+              <Button variant="ghost">Home</Button>
+            </Link>
+            <Link to="/applications">
+              <Button variant="ghost">My Applications</Button>
+            </Link>
+            <Link to="/user">
+              <Button variant="ghost">User Settings</Button>
+            </Link>
+            <Button variant="outline" onClick={handleLogout}>Logout</Button>
+          </div>
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold dark:text-white">{grant.grant_title}</h1>
-        <div className="flex flex-wrap gap-4 items-center pt-2">
-          <Badge variant="secondary" className="text-sm">
-            {grant.provider}
-          </Badge>
-          <span className="text-sm text-muted-foreground flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            Deadline: <span className="text-red-500 font-medium">{formatDate(grant.date_closed)}</span>
-          </span>
-          <span className="text-sm text-muted-foreground">
-            Opp #: {grant.opportunity_number}
-          </span>
+      </nav>
+
+      {/* Page Content */}
+      <div className="container mx-auto py-10 px-4 space-y-8 max-w-5xl">
+        {/* Header */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Grants</span>
+            <span>/</span>
+            <span>{grant.research_field}</span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold dark:text-white">{grant.grant_title}</h1>
+          <div className="flex flex-wrap gap-4 items-center pt-2">
+            <Badge variant="secondary" className="text-sm">
+              {grant.provider}
+            </Badge>
+            <span className="text-sm text-muted-foreground flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              Deadline: <span className="text-red-500 font-medium">{formatDate(grant.date_closed)}</span>
+            </span>
+            <span className="text-sm text-muted-foreground">
+              Opp #: {grant.opportunity_number}
+            </span>
+          </div>
         </div>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Grant Details */}
@@ -284,7 +317,7 @@ export function GrantApplyPage() {
                     <div key={doc.id} className="space-y-2">
                       <span className="text-xs font-medium text-muted-foreground">{doc.type}</span>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <div className="items-center gap-2">
                            <input
                               type="file"
                               multiple
@@ -327,12 +360,20 @@ export function GrantApplyPage() {
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="bg-slate-50 dark:bg-slate-900 p-4 text-xs text-muted-foreground text-center">
+            <CardFooter className="text-center">
               By submitting, you agree to our Terms of Service and Privacy Policy.
             </CardFooter>
           </Card>
         </div>
       </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800 py-8">
+        <div className="container mx-auto px-4 text-center text-slate-600 dark:text-slate-400">
+          <p>&copy; 2025 GrantGuru. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

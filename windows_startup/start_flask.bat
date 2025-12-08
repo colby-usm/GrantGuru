@@ -13,7 +13,7 @@ call venv\Scripts\activate.bat
 REM Set database environment variables
 echo Setting environment variables...
 set GG_USER=root
-set GG_PASS=password
+set GG_PASS=Kappa20205!
 set DB_NAME=GrantGuruDB
 set HOST=127.0.0.1
 

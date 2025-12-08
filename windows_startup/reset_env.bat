@@ -1,6 +1,6 @@
 @echo off
 
-set "GG_PASS=password"
+set "GG_PASS=woXp!^iw5ya^XnKT"
 setlocal EnableDelayedExpansion
 TITLE GrantGuru Environment Reset
 

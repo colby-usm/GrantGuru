@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 //import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { ThemeToggle } from "./ThemeToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import {
   Table,
@@ -167,10 +166,13 @@ export function HomePage({ onViewDetails, onApply }) {
             <span className="dark:text-white text-lg font-semibold">Home</span>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggle />
             {/* Go to Home */}
             <Link to="/homepage">
               <Button variant="ghost">Home</Button>
+            </Link>
+            {/* Search Grants */}
+            <Link to="/searchGrants">
+              <Button variant="ghost">Search Grants</Button>
             </Link>
             {/* User Settings */}
             <Link to="/user">
@@ -198,9 +200,7 @@ export function HomePage({ onViewDetails, onApply }) {
             <CardDescription className="dark:text-slate-400">Manage your grant applications and track their status.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onApply}
-	      onClick={() => navigate("/grantApply")}
-	      >
+            <Button variant="outline" onClick={() => navigate("/searchGrants")}>
               Find Grant to Apply
             </Button>
             <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>

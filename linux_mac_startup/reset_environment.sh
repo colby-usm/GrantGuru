@@ -1,19 +1,14 @@
 #!/bin/bash
-
-###############################################################################
+###############################################################################./set
 # GrantGuru — Reset Environment Script
 # Completely resets the local development environment:
-# - Activates .venv from GrantGuru/ (if present)
+# - Activates .venv from GrantGuru/
 # - Deletes the database using the Phase2 delete_db_script module
 # - Removes Python virtual environment (.venv)
 # - Removes frontend node_modules
 # - Removes Python cache directories
 #
-# After running this script, run:
-#   ./setup.sh
-# to rebuild everything from scratch.
 ###############################################################################
-
 set -e
 
 echo ""
@@ -22,9 +17,15 @@ echo "   GrantGuru — Reset Environment"
 echo "======================================"
 echo ""
 
-# Ensure we are in the project root
+# Get the script's directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
+
+# Navigate to project root (one level up from linux_mac_startup)
+PROJECT_ROOT="$SCRIPT_DIR/.."
+cd "$PROJECT_ROOT"
+
+echo "[i] Working from project root: $(pwd)"
+echo ""
 
 ###############################################################
 # STEP 1: Source virtual environment if it exists
@@ -62,8 +63,7 @@ fi
 ###############################################################
 # STEP 4: Remove Node dependencies
 ###############################################################
-FRONTEND_DIR="Phase3_work/UI/frontend/node_modules"
-
+FRONTEND_DIR="Phase3_work/UI/node_modules"
 if [ -d "$FRONTEND_DIR" ]; then
     echo "[+] Removing frontend node_modules ..."
     rm -rf "$FRONTEND_DIR"
@@ -83,5 +83,5 @@ echo " Environment Reset Complete"
 echo "======================================"
 echo ""
 echo "Next steps:"
-echo "  → Run ./setup.sh to rebuild everything."
+echo "  → Run ./linux_mac_startup/install.sh to rebuild everything."
 echo ""

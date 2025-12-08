@@ -122,10 +122,15 @@ if (signupData.password !== signupData.confirmPassword) {
     console.log("User created:", data.user_id);
     alert("Account created successfully!");
     
-  } catch (err) {
-    console.error(err);
-    alert("Network error");
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.stack); // prints stack trace
+      alert(`Error: ${err.message}`);
+    } else {
+      console.error(err);
+      alert("Network error");
   }
+}
 };
 
 
