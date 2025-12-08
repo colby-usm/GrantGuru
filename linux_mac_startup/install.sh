@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# GrantGuru Full Setup Script
+# GrantGuru Full Installation Script
 # Sets up Python venv, installs dependencies, configures Node via fnm or npm,
 # installs UI dependencies, and creates the database.
 ###############################################################################

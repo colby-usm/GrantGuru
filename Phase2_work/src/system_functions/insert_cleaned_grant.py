@@ -78,11 +78,11 @@ def main(cleaned_grants: list):
         sql_insert = read_sql_helper(INSERT_GRANT_SCRIPT)
         if sql_insert is None:
             raise GrantOperationError(f"SQL script file not found: {INSERT_GRANT_SCRIPT}")
-
+        
         sql_select = read_sql_helper(CHECK_IF_ALREADY_IN_DB_SCRIPT)
         if sql_select is None:
             raise GrantOperationError(f"SQL script file not found: {CHECK_IF_ALREADY_IN_DB_SCRIPT}")
-
+        
         sql_update = read_sql_helper(UPDATE_GRANT_SCRIPT)
         if sql_update is None:
             raise GrantOperationError(f"SQL script file not found: {UPDATE_GRANT_SCRIPT}")
@@ -225,8 +225,16 @@ if __name__ == "__main__":
         sys.exit(1)
 
     grants_file = sys.argv[1]
-    with open(grants_file, "r", encoding="utf-8") as f:
-        cleaned_grants = json.load(f)
+    try:
+        with open(grants_file, "r", encoding="utf-8") as f:
+            cleaned_grants = json.load(f)
+    except Exception as e:
+        print(f"Error loading JSON file {grants_file}: {e}")
+        sys.exit(1)
 
-    main(cleaned_grants)
-
+    result = main(cleaned_grants)
+    if result is None or isinstance(result, int):
+        sys.exit(0)
+    else:
+        print(f"✗ Grant insertion failed: {result}")
+        sys.exit(1)
