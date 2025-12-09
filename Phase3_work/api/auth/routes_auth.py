@@ -23,6 +23,7 @@ from flask import request, jsonify
 from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 from mysql.connector import connect, Error as MySQLError
+import re
 
 from . import auth_bp
 
@@ -61,6 +62,24 @@ def signup():
 
     if not all([f_name, l_name, email, institution, password]):
         return jsonify({"error": "Missing required fields"}), 400
+
+    # Input validation to prevent injection and abuse
+    # Validate string lengths
+    if len(f_name) > 100 or len(l_name) > 100:
+        return jsonify({"error": "Name fields too long (max 100 characters)"}), 400
+    if m_name and len(m_name) > 100:
+        return jsonify({"error": "Middle name too long (max 100 characters)"}), 400
+    if len(institution) > 200:
+        return jsonify({"error": "Institution name too long (max 200 characters)"}), 400
+    if len(email) > 255:
+        return jsonify({"error": "Email too long (max 255 characters)"}), 400
+    if len(password) > 128:
+        return jsonify({"error": "Password too long (max 128 characters)"}), 400
+
+    # Validate email format using regex
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        return jsonify({"error": "Invalid email format"}), 400
 
     if len(password) < 8:
         return jsonify({"error": "Password must be at least 8 characters"}), 400
@@ -138,6 +157,17 @@ def signin():
 
     if not all([email, password]):
         return jsonify({"error": "Missing required fields"}), 400
+
+    # Input validation
+    if len(email) > 255:
+        return jsonify({"error": "Email too long"}), 400
+    if len(password) > 128:
+        return jsonify({"error": "Password too long"}), 400
+    
+    # Validate email format
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        return jsonify({"error": "Invalid email format"}), 400
 
     try:
         conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)

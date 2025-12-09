@@ -20,6 +20,7 @@
 # routes_public.py
 from flask import jsonify, request
 from mysql.connector import connect, Error as MySQLError # type: ignore
+import re
 from . import public_bp
 
 
@@ -68,13 +69,22 @@ def search_grants():
 
     from api import DB_NAME, HOST, MYSQL_USER, MYSQL_PASS
 
-    # 1. Get Parameters
+    # 1. Get Parameters and validate input lengths to prevent abuse
     q = request.args.get("q", "").strip()
     field_query = request.args.get("field", "").strip()
-    op_num_query = request.args.get("op_num", "").strip()  # <--- NEW PARAMETER
+    op_num_query = request.args.get("op_num", "").strip()
     sort_by = request.args.get("sort_by", "title_asc")
 
-    # 2. Define Sorting Logic
+    # Input validation - limit query string lengths to prevent abuse
+    MAX_QUERY_LENGTH = 500
+    if len(q) > MAX_QUERY_LENGTH:
+        return jsonify({"error": "Query string too long"}), 400
+    if len(field_query) > MAX_QUERY_LENGTH:
+        return jsonify({"error": "Field query string too long"}), 400
+    if len(op_num_query) > MAX_QUERY_LENGTH:
+        return jsonify({"error": "Opportunity number query string too long"}), 400
+
+    # 2. Define Sorting Logic - use whitelist approach for SQL injection prevention
     sort_mapping = {
         "title_asc": "grant_title ASC",
         "title_desc": "grant_title DESC",
@@ -83,7 +93,12 @@ def search_grants():
         "close_date_asc": "date_closed ASC",
         "close_date_desc": "date_closed DESC"
     }
-    order_clause = sort_mapping.get(sort_by, "grant_title ASC")
+    
+    # Validate sort_by is from allowed list - critical for SQL injection prevention
+    if sort_by not in sort_mapping:
+        return jsonify({"error": "Invalid sort_by parameter"}), 400
+    
+    order_clause = sort_mapping[sort_by]
 
     # Pagination
     try:
@@ -130,6 +145,7 @@ def search_grants():
                 total = cursor.fetchone()[0] or 0
 
                 # 5. Data Query
+                # Note: order_clause is safe because it's validated against sort_mapping whitelist above
                 # Added 'opportunity_number', 'research_field', 'date_posted' to SELECT
                 data_sql = f"""
                     SELECT
@@ -181,6 +197,11 @@ def search_grants():
 def get_grant(grant_id: str):
     """Return full grant details for a given UUID string."""
     from api import DB_NAME, HOST, MYSQL_USER, MYSQL_PASS
+
+    # Validate UUID format to prevent injection
+    uuid_pattern = r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    if not re.match(uuid_pattern, grant_id):
+        return jsonify({"error": "Invalid grant_id format"}), 400
 
     try:
         with connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME) as conn:
