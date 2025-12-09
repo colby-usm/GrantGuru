@@ -39,8 +39,8 @@ if exist "Phase2_work\src\system_functions\delete_db_script.py" (
     
     cd Phase2_work
     REM Ensure env vars are present if needed for connection
-    set GG_USER=admin
-    set GG_PASS=admin
+    set GG_USER=root
+    set GG_PASS=F8F6iVoAlcXnLPll
     set DB_NAME=GrantGuruDB
     set HOST=localhost
     

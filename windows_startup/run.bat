@@ -26,7 +26,8 @@ REM Set Environment Variables
 REM -----------------------------------------------------------------
 set DB_NAME=GrantGuruDB
 set HOST=localhost
-set GG_USER=root
+set GG_USER=admin
+set GG_PASS=admin
 
 set FLASK_APP=api
 set FLASK_RUN_APP=api:create_app

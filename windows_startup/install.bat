@@ -110,7 +110,8 @@ REM Navigate to Phase2 logic
 cd /d "%PROJECT_ROOT%\Phase2_work"
 
 REM Set Database Env Vars
-set GG_USER=root
+set GG_USER=admin
+set GG_PASS=admin
 set DB_NAME=GrantGuruDB
 set HOST=localhost
 
