@@ -1,17 +1,26 @@
 \documentclass{article}
 \usepackage{graphicx} % Required for inserting images
 
-\title{Performance Analysis and Optimization Report}
-\author{James Tedder}
-\date{December 2025}
+\title{GrantGuru Performance Analysis and Optimization Report}
+\author{Abdullahi Abdullahi, Mathieu Poulin, James Tedder, Colby Wirth}
+\date{December 8 2025}
 
 \begin{document}
 
 \maketitle
 
-\section{Scraper}
+
+\section*{Abdullahi Abdullahi}
+
+\section*{Mathieu Poulin}
+
+\section*{James Tedder}
 
 One of the main bottlenecks for our project was the scraper. It scraped grants using the grants.gov API. This API limits how many requests you can make in a given period of time. We had originally planned to have on demand scraping where we would allow the user to trigger a scrape to get the most up to date information. This proved to be unrealistic as the requests to the api can take upwards of 40 mins. This is why we decided to instead opt for daily scraping. This should give us the level of accuracy we need while not having egregious wait times.
+
+
+\section*{Colby Wirth}
+One of our initial plans for the scraper was to throttle user scrapes to one request every two minutes, since we didn’t want to overload Grants.gov with excessive traffic. However, we were able to eliminate this limitation by removing user-spawned scraping processes altogether. Additionally, we originally intended for users to retrieve scraped data from external sites like Grants.gov within about 10 seconds of making a request. By relying on a daily scraper to ensure fresh data from Grants.gov, we removed the need for any external, on-demand requests and can now deliver grant information to users almost instantaneously.
 
 
 \end{document}
