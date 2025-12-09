@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { BackupManagement } from "./BackupManagement";
 import {
   Table,
   TableBody,
@@ -56,6 +57,9 @@ export function HomePage() {
   const [editingApp, setEditingApp] = useState<ApplicationUI | null>(null);
   const [status, setStatus] = useState<string>("pending");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [showBackupModal, setShowBackupModal] = useState(false);
+
+  const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
 
   // Fetch user's applications on mount
   useEffect(() => {
@@ -231,6 +235,13 @@ export function HomePage() {
             <CardDescription className="dark:text-slate-400">Manage your grant applications and track their status.</CardDescription>
           </div>
           <div className="flex gap-2">
+            <Button
+              onClick={() => setShowBackupModal(true)}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+            >
+              Backup & Recovery
+            </Button>
             <Button onClick={() => navigate("/searchGrants")}>
               <Plus className="mr-2 h-4 w-4" /> Find Grant to Apply
             </Button>
@@ -291,7 +302,6 @@ export function HomePage() {
               <TableRow className="dark:border-slate-700">
                 <TableHead className="dark:text-slate-400">Grant Name</TableHead>
                 <TableHead className="dark:text-slate-400">Date Applied</TableHead>
-                <TableHead className="dark:text-slate-400">Type</TableHead>
                 <TableHead className="dark:text-slate-400">Status</TableHead>
                 <TableHead className="text-right dark:text-slate-400">Actions</TableHead>
               </TableRow>
@@ -299,7 +309,7 @@ export function HomePage() {
             <TableBody>
               {filteredApplications.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground dark:text-slate-500">
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground dark:text-slate-500">
                     No applications found.
                   </TableCell>
                 </TableRow>
@@ -308,11 +318,6 @@ export function HomePage() {
                   <TableRow key={app.application_id} className="dark:border-slate-700">
                     <TableCell className="font-medium dark:text-white max-w-xs break-words whitespace-normal">{app.grant_name}</TableCell>
                     <TableCell className="dark:text-slate-300 whitespace-nowrap">{app.application_date}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <Badge variant={app.submission_status === "started" ? "outline" : "default"} className="dark:text-white">
-                        {app.submission_status === "started" ? "STARTED" : "SUBMITTED"}
-                      </Badge>
-                    </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <Badge className={`${getStatusColor(app.status)} text-slate-900 dark:text-white`}>
                         {app.status.replace('_', ' ').toUpperCase()}
@@ -338,8 +343,13 @@ export function HomePage() {
       </Card>
     </div>
 
-
-
+      {/* Backup Management Modal */}
+      {showBackupModal && userId && (
+        <BackupManagement
+          userId={userId}
+          onClose={() => setShowBackupModal(false)}
+        />
+      )}
 
       {/* Footer (same styling as LandingPage) */}
       <footer className="border-t bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800 py-8">

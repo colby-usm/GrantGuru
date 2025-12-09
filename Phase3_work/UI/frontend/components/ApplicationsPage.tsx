@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { BackupManagement } from './BackupManagement';
 
 const API_BASE_URL = 'http://127.0.0.1:5000';
 
@@ -17,8 +18,12 @@ export function ApplicationsPage() {
   const [selectedGrantId, setSelectedGrantId] = useState('');
   const [creatingApp, setCreatingApp] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [showBackupModal, setShowBackupModal] = useState(false);
 
   const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
+
+  // Debug: Verify backup system is loaded
+  console.log('✅ ApplicationsPage loaded with Backup & Recovery feature');
 
   useEffect(() => {
     if (!userId) {
@@ -149,9 +154,14 @@ export function ApplicationsPage() {
         <Card className="p-6 dark:bg-slate-800 dark:border-slate-700">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl dark:text-white">Your Applications</h2>
-            <Button onClick={handleOpenCreateModal} className="bg-blue-600 hover:bg-blue-700">
-              + Create Application
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowBackupModal(true)} variant="outline" className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20">
+                Backup & Recovery
+              </Button>
+              <Button onClick={handleOpenCreateModal} className="bg-blue-600 hover:bg-blue-700">
+                + Create Application
+              </Button>
+            </div>
           </div>
 
           {/* Search Box */}
@@ -246,6 +256,14 @@ export function ApplicationsPage() {
               </div>
             </Card>
           </div>
+        )}
+
+        {/* Backup Management Modal */}
+        {showBackupModal && userId && (
+          <BackupManagement
+            userId={userId}
+            onClose={() => setShowBackupModal(false)}
+          />
         )}
       </main>
 
