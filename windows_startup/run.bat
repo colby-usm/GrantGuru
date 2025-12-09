@@ -1,4 +1,13 @@
 @echo off
+REM ===========================================================================
+REM File:        run.bat
+REM Description: This script:
+REM 1. Starts the Flask backend (T1)
+REM 2. Starts the React frontend (T2)
+REM Author:      James Tedder
+REM Date:        2025-12-08
+REM ===========================================================================
+
 setlocal
 
 REM -----------------------------------------------------------------

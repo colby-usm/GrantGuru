@@ -1,4 +1,12 @@
 @echo off
+REM ===========================================================================
+REM File:        install.bat
+REM Description: Installs dependencies and configures the environment.
+REM Author:      James Tedder
+REM Date:        2025-12-08
+REM ===========================================================================
+
+REM Your code starts here...
 setlocal EnableDelayedExpansion
 
 echo ========================================
