@@ -8,7 +8,7 @@ Parameters:
 Returns:
     All columns with UUIDs converted to string format
 */
-SELECT 
+SELECT
     BIN_TO_UUID(application_id) AS application_id,
     BIN_TO_UUID(user_id) AS user_id,
     BIN_TO_UUID(grant_id) AS grant_id,
