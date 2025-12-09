@@ -10,16 +10,19 @@ echo GrantGuru Initial Setup
 echo ========================================
 echo.
 
-REM Change to script directory
-cd /d "%~dp0"
+REM Change to project root (parent of windows_startup)
+cd /d "%~dp0.."
 
 REM ###############################################################################
 REM Set Database Environment Variables
+REM Note: The .env file in Phase2_work will be used for database credentials
+REM These environment variables are for reference only
 REM ###############################################################################
 
 echo Setting database environment variables...
+echo Using database credentials from Phase2_work/.env file
 set GG_USER=root
-set GG_PASS=Kappa20205!
+set "GG_PASS=Kappa20205!"
 set DB_NAME=GrantGuruDB
 set HOST=127.0.0.1
 echo [OK] Environment variables set
@@ -70,9 +73,9 @@ echo Python Environment Setup
 echo ========================================
 echo.
 
-if not exist "venv\" (
+if not exist ".venv\" (
     echo Creating virtual environment...
-    py -3.12 -m venv venv
+    py -3.12 -m venv .venv
     if errorlevel 1 (
         echo [ERROR] Failed to create virtual environment
         pause
@@ -85,7 +88,7 @@ if not exist "venv\" (
 
 echo.
 echo Activating virtual environment...
-call venv\Scripts\activate.bat
+call .venv\Scripts\activate.bat
 
 echo.
 echo Installing Python dependencies...
@@ -150,18 +153,21 @@ echo Creating Database
 echo ========================================
 echo.
 
-if exist "create_db_script.py" (
+cd Phase2_work
+if exist "src\system_functions\create_db_script.py" (
     echo Running database creation script...
-    python create_db_script.py
+    python -m src.system_functions.create_db_script
     if errorlevel 1 (
         echo [WARNING] Database creation encountered an issue
         echo This may be normal if database already exists
     ) else (
         echo [OK] Database created successfully
     )
+    cd ..
 ) else (
-    echo [WARNING] create_db_script.py not found, skipping database creation
+    echo [WARNING] Database creation script not found, skipping database creation
     echo You may need to create the database manually
+    cd ..
 )
 
 echo.

@@ -5,6 +5,7 @@ import { HomePage } from "./components/HomePage";
 import { GrantApplyPage } from "./components/GrantApplyPage.tsx";
 import { GrantsSearchPage } from "./components/GrantsSearchPage";
 import { GrantDetailsPage } from "./components/GrantDetailsPage";
+import { ApplicationEditPage } from "./components/ApplicationEditPage";
 import { ThemeProvider } from "./components/ThemeProvider";
 import  UserPage from "./components/UserPage";
 import SearchGrants from "./components/SearchGrants";
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/grantApply" element={<GrantApplyPage/>} />
           <Route path="/searchGrants" element={<GrantsSearchPage/>} />
           <Route path="/grant/:id" element={<GrantDetailsPage/>} />
+          <Route path="/application/:applicationId" element={<ApplicationEditPage/>} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
