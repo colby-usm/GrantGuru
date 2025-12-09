@@ -185,10 +185,6 @@ export function GrantsSearchPage() {
                    <span className="text-slate-300 dark:text-slate-600">•</span>
                    <span>Deadline: {g.date_closed || "No Deadline"}</span>
                 </div>
-                <div
-                  className="text-sm text-slate-700 dark:text-slate-300 mt-2 line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(g.description || "") }}
-                />
               </Link>
             ))
           )}
