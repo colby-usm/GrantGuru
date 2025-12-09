@@ -2,8 +2,8 @@
 
 """
 
-    Version: 29 November 2025
-    Author: Colby Wirth
+    Version: 8 December 2025
+    Author: Colby Wirth, James Tedder
 
     Description:
         This module defines the public-facing API routes for the application.

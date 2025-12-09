@@ -1,4 +1,16 @@
 @echo off
+REM ===========================================================================
+REM File:        reset_environment.bat
+REM Description: Completely resets the local development environment:
+REM - Activates .venv from GrantGuru/
+REM - Deletes the database using the Phase2 delete_db_script module
+REM - Removes Python virtual environment (.venv)
+REM - Removes frontend node_modules
+REM - Removes Python cache directories
+REM Author:      James Tedder
+REM Date:        2025-12-08
+REM ===========================================================================
+
 setlocal
 
 echo ========================================
