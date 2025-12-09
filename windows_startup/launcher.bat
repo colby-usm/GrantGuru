@@ -15,13 +15,14 @@ echo %GREEN%=== GrantGuru Launcher ===%NC%
 
 :: 1. Setup Paths & Credentials
 :: ==========================================
+cd ..
 set "PROJECT_ROOT=%~dp0"
 set "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
 
 set "PHASE2_DIR=%PROJECT_ROOT%\Phase2_work"
 set "PHASE3_DIR=%PROJECT_ROOT%\Phase3_work"
 set "UI_DIR=%PHASE3_DIR%\UI"
-set "VENV_ACTIVATE=%PROJECT_ROOT%\.venv\Scripts\activate.bat"
+set "VENV_ACTIVATE=%PROJECT_ROOT%\venv\Scripts\activate.bat"
 
 :: DATABASE CONFIGURATION
 :: Check if these match your actual MySQL setup!

@@ -12,6 +12,7 @@ echo.
 
 REM Change to script directory
 cd /d "%~dp0"
+cd ..
 
 REM ###############################################################################
 REM Set Database Environment Variables

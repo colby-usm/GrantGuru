@@ -106,6 +106,10 @@ def search_grants():
                 conditions = []
                 params = []
 
+                if op_num_query:
+                    conditions.append("opportunity_number LIKE %s")
+                    params.append(f"%{op_num_query}%")
+                    
                 if q:
                     conditions.append("(grant_title LIKE %s OR description LIKE %s)")
                     params.extend([f"%{q}%", f"%{q}%"])
@@ -114,9 +118,7 @@ def search_grants():
                     conditions.append("research_field LIKE %s")
                     params.append(f"%{field_query}%")
 
-                if op_num_query: # <--- NEW CONDITION
-                    conditions.append("opportunity_number LIKE %s")
-                    params.append(f"%{op_num_query}%")
+                
 
                 where_clause = ""
                 if conditions:

@@ -1,11 +1,10 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import DOMPurify from "dompurify";
+
 const API_BASE_URL = "http://127.0.0.1:5000";
 
 export function GrantsSearchPage() {
-  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [researchField, setResearchField] = useState("");
   const [opportunityNum, setOpportunityNum] = useState(""); // <--- NEW STATE
@@ -19,13 +18,8 @@ export function GrantsSearchPage() {
   const [debugText, setDebugText] = useState<string | null>(null);
   const [statusCode, setStatusCode] = useState<number | null>(null);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("user_id");
-    sessionStorage.removeItem("access_token");
-    navigate("/");
-  };
-
-  const fetchResults = async (q = "", p = 1) => {
+  // Updated fetchResults to accept new params
+  const fetchResults = async (q = "", field = "", opNum = "", sort = "title_asc", p = 1) => {
     setError(null);
     setLoading(true);
     try {
@@ -96,15 +90,14 @@ export function GrantsSearchPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link to="/homepage">
-              <Button variant="ghost">Home</Button>
+              <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">Home</button>
             </Link>
             <Link to="/searchGrants">
-              <Button variant="ghost">Search Grants</Button>
+              <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">Search Grants</button>
             </Link>
             <Link to="/user">
-              <Button variant="ghost">User Settings</Button>
+              <button className="px-3 py-1 text-sm rounded hover:bg-slate-100 dark:hover:bg-slate-800">User Settings</button>
             </Link>
-            <Button variant="outline" onClick={handleLogout}>Logout</Button>
           </div>
         </div>
       </nav>
