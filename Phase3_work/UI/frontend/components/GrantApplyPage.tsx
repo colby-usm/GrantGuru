@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { Calendar, CheckCircle2, FileText, Link as LinkIcon, Upload, AlertCircle, X } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Calendar, Link as LinkIcon, Upload, AlertCircle, X } from "lucide-react";
 
 // --- Interfaces based on Schema ---
 
@@ -75,11 +72,8 @@ export function GrantApplyPage() {
   const navigate = useNavigate();
   const [grant] = useState<Grant>(MOCK_GRANT);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Form State
-  const [applicantName, setApplicantName] = useState("");
-  const [applicantEmail, setApplicantEmail] = useState("");
+  // Form State (removed applicant name/email - users track their own applications)
 
   const handleLogout = () => {
     localStorage.removeItem('user_id');
@@ -120,36 +114,87 @@ export function GrantApplyPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      // In a real app, this would create the Application record and upload Documents
-    }, 2000);
-  };
 
-  if (isSuccess) {
-    return (
-      <div className="container mx-auto py-20 px-4 max-w-2xl text-center space-y-6">
-        <div className="flex justify-center">
-          <CheckCircle2 className="h-24 w-24 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold dark:text-white">Application Submitted!</h1>
-        <p className="text-muted-foreground dark:text-slate-400">
-          Your application for <strong>{grant.grant_title}</strong> has been successfully submitted. 
-          You will receive a confirmation email at {applicantEmail}.
-        </p>
-        <div className="flex justify-center gap-4 pt-4">
-          <Button variant="outline" onClick={() => setIsSuccess(false)}>Return to Grant</Button>
-          <Button>View My Applications</Button>
-        </div>
-      </div>
-    );
-  }
+    try {
+      const token = sessionStorage.getItem("access_token");
+      if (!token) {
+        alert("Please log in to apply for grants");
+        navigate("/");
+        return;
+      }
+
+      // Step 1: Create the application
+      const response = await fetch("http://127.0.0.1:5000/api/user/applications", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          grant_id: grant.grant_id,
+          submission_status: "started",
+          status: "pending",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const applicationId = data.application.application_id;
+
+        // Step 2: Upload documents if any files were selected
+        const hasFiles = documents.some(doc => doc.files.length > 0);
+
+        if (hasFiles) {
+          for (const doc of documents) {
+            if (doc.files.length > 0) {
+              const formData = new FormData();
+              doc.files.forEach(file => {
+                formData.append('files', file);
+              });
+              formData.append('document_type', doc.type);
+
+              const uploadResponse = await fetch(
+                `http://127.0.0.1:5000/api/user/applications/${applicationId}/documents`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Authorization": `Bearer ${token}`,
+                  },
+                  body: formData,
+                }
+              );
+
+              if (!uploadResponse.ok) {
+                console.error(`Failed to upload ${doc.type} documents`);
+              }
+            }
+          }
+        }
+
+        alert("Application and documents saved successfully!");
+        navigate("/homepage");
+      } else if (response.status === 409) {
+        alert(data.error || "You have already applied to this grant");
+        setIsSubmitting(false);
+      } else if (response.status === 401) {
+        alert("Session expired. Please log in again.");
+        sessionStorage.removeItem("user_id");
+        sessionStorage.removeItem("access_token");
+        navigate("/");
+      } else {
+        alert(data.error || "Failed to save application");
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error("Error with application:", error);
+      alert("Failed to save application");
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
@@ -281,36 +326,11 @@ export function GrantApplyPage() {
             <CardHeader>
               <CardTitle>Apply Now</CardTitle>
               <CardDescription>
-                Submit your application for this grant.
+                Save your application for this grant.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Applicant Name</Label>
-                  <Input 
-                    id="name" 
-                    placeholder="Your Name or Organization" 
-                    required 
-                    value={applicantName}
-                    onChange={(e) => setApplicantName(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Contact Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="email@example.com" 
-                    required 
-                    value={applicantEmail}
-                    onChange={(e) => setApplicantEmail(e.target.value)}
-                  />
-                </div>
-
-                <Separator />
-
+              <form onSubmit={handleSaveDraft} className="space-y-4">
                 <div className="space-y-3">
                   <Label>Required Documents</Label>
                   {documents.map((doc) => (
@@ -339,7 +359,7 @@ export function GrantApplyPage() {
                             {doc.files.map((file, index) => (
                               <div key={index} className="flex items-center justify-between text-xs bg-slate-100 dark:bg-slate-900 p-2 rounded">
                                 <span className="truncate max-w-[180px]">{file.name}</span>
-                                <button 
+                                <button
                                   type="button"
                                   onClick={() => removeFile(doc.id, index)}
                                   className="text-slate-500 hover:text-red-500"
@@ -356,13 +376,10 @@ export function GrantApplyPage() {
                 </div>
 
                 <Button type="submit" className="w-full mt-4" disabled={isSubmitting}>
-                  {isSubmitting ? "Submitting..." : "Submit Application"}
+                  {isSubmitting ? "Saving..." : "Save Application"}
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="text-center">
-              By submitting, you agree to our Terms of Service and Privacy Policy.
-            </CardFooter>
           </Card>
         </div>
       </div>

@@ -1,3 +1,5 @@
+**Author:** Mathieu Poulin
+**Version:** December 8, 2025
 # SQL Injection Prevention - Security Improvements
 
 ## Overview

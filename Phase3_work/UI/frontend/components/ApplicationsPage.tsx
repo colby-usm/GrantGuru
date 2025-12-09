@@ -17,7 +17,6 @@ export function ApplicationsPage() {
   const [selectedGrantId, setSelectedGrantId] = useState('');
   const [creatingApp, setCreatingApp] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
-
   const userId = localStorage.getItem('user_id') || sessionStorage.getItem('user_id');
 
   useEffect(() => {
@@ -149,9 +148,11 @@ export function ApplicationsPage() {
         <Card className="p-6 dark:bg-slate-800 dark:border-slate-700">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl dark:text-white">Your Applications</h2>
-            <Button onClick={handleOpenCreateModal} className="bg-blue-600 hover:bg-blue-700">
-              + Create Application
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleOpenCreateModal} className="bg-blue-600 hover:bg-blue-700">
+                + Create Application
+              </Button>
+            </div>
           </div>
 
           {/* Search Box */}
@@ -247,6 +248,7 @@ export function ApplicationsPage() {
             </Card>
           </div>
         )}
+
       </main>
 
       <footer className="border-t bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800 py-8">

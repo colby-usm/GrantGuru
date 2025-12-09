@@ -29,8 +29,8 @@ def daily_operations():
 
     log_info("Starting daily scraper scheduler...")
     dirty_grant_dict = scraper_script([
-        "--statuses", "posted"  # we can add other filters here
-        #"-n", "100"  # FOR TESTING
+        "--statuses", "posted",  # we can add other filters here
+        "-n", "20"  # Limit to 20 grants for testing
     ])
 
     # scraper_script returns None when no IDs are found or an error occurred
