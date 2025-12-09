@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { BackupManagement } from "./BackupManagement";
 import {
   Table,
   TableBody,
@@ -57,7 +56,6 @@ export function HomePage() {
   const [editingApp, setEditingApp] = useState<ApplicationUI | null>(null);
   const [status, setStatus] = useState<string>("pending");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [showBackupModal, setShowBackupModal] = useState(false);
 
   const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
 
@@ -235,13 +233,6 @@ export function HomePage() {
             <CardDescription className="dark:text-slate-400">Manage your grant applications and track their status.</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button
-              onClick={() => setShowBackupModal(true)}
-              variant="outline"
-              className="border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-            >
-              Backup & Recovery
-            </Button>
             <Button onClick={() => navigate("/searchGrants")}>
               <Plus className="mr-2 h-4 w-4" /> Find Grant to Apply
             </Button>
@@ -343,13 +334,6 @@ export function HomePage() {
       </Card>
     </div>
 
-      {/* Backup Management Modal */}
-      {showBackupModal && userId && (
-        <BackupManagement
-          userId={userId}
-          onClose={() => setShowBackupModal(false)}
-        />
-      )}
 
       {/* Footer (same styling as LandingPage) */}
       <footer className="border-t bg-slate-50 dark:bg-slate-900/50 dark:border-slate-800 py-8">

@@ -583,17 +583,17 @@ def get_application_tasks(application_id: str):
         cursor.execute(
             """
             SELECT
-                BIN_TO_UUID(task_id) AS task_id,
+                BIN_TO_UUID(internal_deadline_id) AS task_id,
                 BIN_TO_UUID(application_id) AS application_id,
-                task_name,
+                deadline_name,
                 task_description,
-                DATE_FORMAT(deadline, '%Y-%m-%d') AS deadline,
+                DATE_FORMAT(deadline_date, '%Y-%m-%d') AS deadline,
                 completed,
                 created_at,
                 updated_at
-            FROM ApplicationTasks
+            FROM InternalDeadlines
             WHERE application_id = UUID_TO_BIN(%s)
-            ORDER BY deadline ASC
+            ORDER BY deadline_date ASC
             """,
             (application_id,)
         )
@@ -686,7 +686,7 @@ def create_task(application_id: str):
         # Insert new task
         cursor.execute(
             """
-            INSERT INTO ApplicationTasks (application_id, task_name, task_description, deadline)
+            INSERT INTO InternalDeadlines (application_id, deadline_name, task_description, deadline_date)
             VALUES (UUID_TO_BIN(%s), %s, %s, %s)
             """,
             (application_id, task_name, task_description, deadline)
@@ -699,15 +699,15 @@ def create_task(application_id: str):
         cursor.execute(
             """
             SELECT
-                BIN_TO_UUID(task_id) AS task_id,
+                BIN_TO_UUID(internal_deadline_id) AS task_id,
                 BIN_TO_UUID(application_id) AS application_id,
-                task_name,
+                deadline_name,
                 task_description,
-                DATE_FORMAT(deadline, '%Y-%m-%d') AS deadline,
+                DATE_FORMAT(deadline_date, '%Y-%m-%d') AS deadline,
                 completed,
                 created_at,
                 updated_at
-            FROM ApplicationTasks
+            FROM InternalDeadlines
             WHERE application_id = UUID_TO_BIN(%s)
             ORDER BY created_at DESC LIMIT 1
             """,
@@ -780,7 +780,7 @@ def update_task(application_id: str, task_id: str):
         params = []
 
         if "task_name" in data:
-            update_fields.append("task_name = %s")
+            update_fields.append("deadline_name = %s")
             params.append(data["task_name"])
 
         if "task_description" in data:
@@ -788,7 +788,7 @@ def update_task(application_id: str, task_id: str):
             params.append(data["task_description"])
 
         if "deadline" in data:
-            update_fields.append("deadline = %s")
+            update_fields.append("deadline_date = %s")
             params.append(data["deadline"])
 
         if "completed" in data:
@@ -801,9 +801,9 @@ def update_task(application_id: str, task_id: str):
         # Update the task
         params.extend([task_id, application_id])
         update_query = f"""
-            UPDATE ApplicationTasks
+            UPDATE InternalDeadlines
             SET {', '.join(update_fields)}
-            WHERE task_id = UUID_TO_BIN(%s) AND application_id = UUID_TO_BIN(%s)
+            WHERE internal_deadline_id = UUID_TO_BIN(%s) AND application_id = UUID_TO_BIN(%s)
         """
         cursor.execute(update_query, tuple(params))
 
@@ -857,8 +857,8 @@ def delete_task(application_id: str, task_id: str):
         # Delete the task
         cursor.execute(
             """
-            DELETE FROM ApplicationTasks
-            WHERE task_id = UUID_TO_BIN(%s) AND application_id = UUID_TO_BIN(%s)
+            DELETE FROM InternalDeadlines
+            WHERE internal_deadline_id = UUID_TO_BIN(%s) AND application_id = UUID_TO_BIN(%s)
             """,
             (task_id, application_id)
         )
