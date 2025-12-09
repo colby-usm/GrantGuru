@@ -1,6 +1,4 @@
 # api/__init__.py
-
-
 '''
     File: api/__init__.py
 
@@ -55,9 +53,24 @@ MYSQL_USER = os.getenv("GG_USER", "admin")
 MYSQL_PASS = os.getenv("GG_PASS", "admin")
 
 
+
+# retrieving/(generating jwt secret key if needed)
+dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if JWT_SECRET_KEY is None:
+    JWT_SECRET_KEY = secrets.token_hex(32)
+    with open(dotenv_path, "a") as f:
+        f.write(f"JWT_SECRET_KEY={JWT_SECRET_KEY}\n")
+
+
+
 def create_app():
+
     app = Flask(__name__)
-    app.config["JWT_SECRET_KEY"] = secrets.token_hex(32)
+    app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 
     CORS(
         app,
