@@ -1,4 +1,10 @@
 // HomePage.tsx
+/**
+ * Author: Mathieu Poulin and Abdullahi Abdullahi
+ * File: HomePage.tsx
+ * Description: The Homepage displays the user Applications
+ */
+
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";

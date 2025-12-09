@@ -1,10 +1,16 @@
+'''
+    Authors: Colby Wirth, Mathieu Poulin, James Tedder
+    Version: 8 December 2025
+'''
+
 # routes_user.py
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mysql.connector import connect, Error as MySQLError
 from api import PHASE2_ROOT
-from datetime import datetime
 import os
+import re
+from datetime import datetime
 
 user_bp = Blueprint("user", __name__)
 
@@ -34,6 +40,16 @@ def update_personal_info():
         "lName": "l_name",
         "institution": "institution"
     }
+
+    # Validate input lengths before processing
+    if "fName" in data and len(str(data["fName"])) > 100:
+        return jsonify({"error": "First name too long (max 100 characters)"}), 400
+    if "mName" in data and data["mName"] and len(str(data["mName"])) > 100:
+        return jsonify({"error": "Middle name too long (max 100 characters)"}), 400
+    if "lName" in data and len(str(data["lName"])) > 100:
+        return jsonify({"error": "Last name too long (max 100 characters)"}), 400
+    if "institution" in data and len(str(data["institution"])) > 200:
+        return jsonify({"error": "Institution name too long (max 200 characters)"}), 400
 
     new_fields = {sql_key: data[frontend_key] 
                   for frontend_key, sql_key in field_map.items() 
@@ -92,10 +108,16 @@ def update_email():
     if not data or "email" not in data or not data["email"]:
         return jsonify({"error": "Missing or empty email"}), 400
 
-    new_email_data = {
-        "email": data["email"],
-        "user_id": user_id
-    }
+    new_email = data["email"]
+
+    # Validate email length
+    if len(new_email) > 255:
+        return jsonify({"error": "Email too long (max 255 characters)"}), 400
+
+    # Validate email format
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, new_email):
+        return jsonify({"error": "Invalid email format"}), 400
 
     try:
         conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)
@@ -106,7 +128,7 @@ def update_email():
             user_id=user_id,
             resource_owner_id=user_id,
             cursor=cursor,
-            new_email=data["email"],
+            new_email=new_email,
             base_path=PHASE2_ROOT
         )
 
@@ -148,6 +170,12 @@ def update_password():
         return jsonify({"error": "Missing oldPassword or newPassword"}), 400
     if not data["oldPassword"] or not data["newPassword"]:
         return jsonify({"error": "Empty oldPassword or newPassword"}), 400
+
+    # Validate password lengths
+    if len(data["oldPassword"]) > 128 or len(data["newPassword"]) > 128:
+        return jsonify({"error": "Password too long (max 128 characters)"}), 400
+    if len(data["newPassword"]) < 8:
+        return jsonify({"error": "New password must be at least 8 characters"}), 400
 
     try:
         conn = connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME)

@@ -2,43 +2,28 @@
 
 ## Prerequisites
 
-- Instructions for Mac and Linux Setups
+- Python **3.12**
+- Node.js **23.11.0**
+- Either **nvm** or **fnm** (Node version managers) for Mac/Linux
 
--   Python **3.12**
--   Node.js **23.11.0**
--   Either **nvm** or **fnm** (Node version managers)
-
-## Project Structure
+## Setup & Usage
 
 All scripts must be executed from the `GrantGuru/` directory.
 
-## Setup
+| Task | Mac/Linux | Windows |
+|------|-----------|---------|
+| **Setup** | `./linux_mac_startup/install.sh` | `.\windows_startup\install.bat` |
+| **Run Web App** | `./linux_mac_startup/run.sh` | `.\windows_startup\run.bat` |
+| **Reset Environment** | `./linux_mac_startup/reset_environment.sh` | `.\windows_startup\reset_environment.bat` |
 
-To set up the project:
+### Setup
 
-``` bash
-linux_mac_startup/setup.sh
-```
+Installs Python dependencies, initializes the virtual environment, and installs Node packages.
 
-This installs Python dependencies, initializes the virtual environment,
-and installs Node packages using whichever Node version manager (`nvm`
-or `fnm`) is available.
+### Running the Web App
 
-## Running the Web App
+Starts both the backend (Flask) and frontend (React) services concurrently.
 
-To start the backend (Flask) and frontend (React) together:
+### Reset Environment
 
-``` bash
-./linux_mac_startup/run.sh
-```
-
-This script automatically launches both services concurrently.
-
-## Cleanup
-
-To reset the environment (remove venv, node_modules, db
-etc.):
-
-``` bash
-./linux_mac_startup/reset_environment.sh
-```
+Removes the virtual environment, node_modules, database, and other generated files to reset the project to a clean state.

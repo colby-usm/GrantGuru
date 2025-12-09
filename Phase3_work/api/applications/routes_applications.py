@@ -14,6 +14,7 @@ Note: Authentication/session management is out-of-scope for this patch.
 
 import os
 from datetime import datetime
+import re
 
 from flask import request, jsonify
 from mysql.connector import connect, Error as MySQLError
@@ -57,6 +58,11 @@ def get_applications_for_user(user_id: str):
     """
     if read_applications_by_user is None:
         return jsonify({"error": "Server not configured to access application operations"}), 500
+
+    # Validate UUID format to prevent injection
+    uuid_pattern = r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    if not re.match(uuid_pattern, user_id):
+        return jsonify({"error": "Invalid user_id format"}), 400
 
     try:
         with connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME) as conn:
@@ -137,6 +143,18 @@ def create_new_application():
 
     if not all([user_id, grant_id]):
         return jsonify({"error": "Missing required fields: user_id, grant_id"}), 400
+
+    # Validate UUID formats to prevent injection
+    uuid_pattern = r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+    if not re.match(uuid_pattern, user_id):
+        return jsonify({"error": "Invalid user_id format"}), 400
+    if not re.match(uuid_pattern, grant_id):
+        return jsonify({"error": "Invalid grant_id format"}), 400
+
+    # Validate status is from allowed list
+    allowed_statuses = ["pending", "approved", "rejected", "submitted", "in_review"]
+    if status not in allowed_statuses:
+        return jsonify({"error": "Invalid status value"}), 400
 
     try:
         with connect(host=HOST, user=MYSQL_USER, password=MYSQL_PASS, database=DB_NAME) as conn:

@@ -1,4 +1,9 @@
-// AuthDialog.tsx
+/**
+ *  Author: Colby Wirth
+ *  File: AuthDialog.tsx
+ *  Description: Handles the login annd signup forums
+ */
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
