@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
-import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Calendar, CheckCircle2, LinkIcon, Upload, AlertCircle, X, Building2 } from "lucide-react";
+import { Calendar, LinkIcon, Upload, AlertCircle, X, Building2 } from "lucide-react";
 
 const API_BASE_URL = "http://127.0.0.1:5000";
 
@@ -43,11 +42,8 @@ export function GrantDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Form State
-  const [applicantName, setApplicantName] = useState("");
-  const [applicantEmail, setApplicantEmail] = useState("");
+  // Form State (removed applicant name/email - users track their own applications)
 
   // Document Uploads State
   const [documents, setDocuments] = useState<DocumentUpload[]>([
@@ -97,15 +93,6 @@ export function GrantDetailsPage() {
 
   const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleApplicationAction("started");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleApplicationAction("submitted");
-  };
-
-  const handleApplicationAction = async (submissionStatus: "started" | "submitted") => {
     setIsSubmitting(true);
 
     try {
@@ -116,6 +103,7 @@ export function GrantDetailsPage() {
         return;
       }
 
+      // Step 1: Create the application
       const response = await fetch("http://127.0.0.1:5000/api/user/applications", {
         method: "POST",
         headers: {
@@ -124,22 +112,48 @@ export function GrantDetailsPage() {
         },
         body: JSON.stringify({
           grant_id: grant.grant_id,
-          submission_status: submissionStatus,
+          submission_status: "started",
           status: "pending",
-          applicant_name: applicantName,
-          applicant_email: applicantEmail,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        if (submissionStatus === "submitted") {
-          setIsSuccess(true);
-        } else {
-          alert("Application saved successfully!");
-          navigate("/homepage");
+        const applicationId = data.application.application_id;
+
+        // Step 2: Upload documents if any files were selected
+        const hasFiles = documents.some(doc => doc.files.length > 0);
+
+        if (hasFiles) {
+          for (const doc of documents) {
+            if (doc.files.length > 0) {
+              const formData = new FormData();
+              doc.files.forEach(file => {
+                formData.append('files', file);
+              });
+              formData.append('document_type', doc.type);
+
+              const uploadResponse = await fetch(
+                `http://127.0.0.1:5000/api/user/applications/${applicationId}/documents`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Authorization": `Bearer ${token}`,
+                  },
+                  body: formData,
+                }
+              );
+
+              if (!uploadResponse.ok) {
+                console.error(`Failed to upload ${doc.type} documents`);
+              }
+            }
+          }
         }
+
+        alert("Application and documents saved successfully!");
+        navigate("/homepage");
       } else if (response.status === 409) {
         alert(data.error || "You have already applied to this grant");
         setIsSubmitting(false);
@@ -149,7 +163,7 @@ export function GrantDetailsPage() {
         sessionStorage.removeItem("access_token");
         navigate("/");
       } else {
-        alert(data.error || `Failed to ${submissionStatus === "started" ? "save application" : "submit application"}`);
+        alert(data.error || "Failed to save application");
         setIsSubmitting(false);
       }
     } catch (error) {
@@ -188,29 +202,6 @@ export function GrantDetailsPage() {
   if (loading) return <div className="p-6">Loading...</div>;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!grant) return <div className="p-6">Grant not found.</div>;
-
-  if (isSuccess) {
-    return (
-      <div className="container mx-auto py-20 px-4 max-w-2xl text-center space-y-6">
-        <div className="flex justify-center">
-          <CheckCircle2 className="h-24 w-24 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold dark:text-white">Application Submitted!</h1>
-        <p className="text-muted-foreground dark:text-slate-400">
-          Your application for <strong>{grant.grant_title}</strong> has been successfully submitted.
-          You will receive a confirmation email at {applicantEmail}.
-        </p>
-        <div className="flex justify-center gap-4 pt-4">
-          <Link to="/homepage">
-            <Button>View My Applications</Button>
-          </Link>
-          <Link to="/searchGrants">
-            <Button variant="outline">View More Grants</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
@@ -419,66 +410,44 @@ export function GrantDetailsPage() {
         <div className="lg:col-span-1" id="application-form">
           <Card className="sticky top-6 dark:bg-slate-800 dark:border-slate-700 border-t-4 border-t-blue-600 shadow-lg">
             <CardHeader>
-              <CardTitle>Apply Now</CardTitle>
-              <CardDescription>
-                Submit your application for this grant.
+              <CardTitle className="dark:text-white">Application Form</CardTitle>
+              <CardDescription className="dark:text-slate-400">
+                Save your application progress.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Applicant Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Your Name or Organization"
-                    required
-                    value={applicantName}
-                    onChange={(e) => setApplicantName(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Contact Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="email@example.com"
-                    required
-                    value={applicantEmail}
-                    onChange={(e) => setApplicantEmail(e.target.value)}
-                  />
-                </div>
-
-                <Separator />
-
+              <form onSubmit={handleSaveDraft} className="space-y-4">
                 <div className="space-y-3">
-                  <Label>Required Documents</Label>
+                  <Label className="dark:text-slate-300">Required Documents</Label>
                   {documents.map((doc) => (
                     <div key={doc.id} className="space-y-2">
-                      <span className="text-xs font-medium text-muted-foreground">{doc.type}</span>
+                      <span className="text-xs font-medium text-muted-foreground dark:text-slate-400">{doc.type}</span>
+
+                      {/* Upload new files */}
                       <div className="space-y-2">
                         <div className="items-center gap-2">
-                           <input
-                              type="file"
-                              multiple
-                              className="hidden"
-                              id={`file-upload-${doc.id}`}
-                              onChange={(e) => {
-                                handleFileChange(doc.id, e.target.files);
-                                e.target.value = ''; // Reset input
-                              }}
-                           />
-                           <Button asChild variant="outline" size="sm" className="w-full cursor-pointer">
-                              <label htmlFor={`file-upload-${doc.id}`}>
-                                <Upload className="mr-2 h-3 w-3" /> Browse Files
-                              </label>
-                           </Button>
+                          <input
+                            type="file"
+                            multiple
+                            className="hidden"
+                            id={`file-upload-${doc.id}`}
+                            onChange={(e) => {
+                              handleFileChange(doc.id, e.target.files);
+                              e.target.value = '';
+                            }}
+                          />
+                          <Button asChild variant="outline" size="sm" className="w-full cursor-pointer dark:border-slate-700 dark:text-white">
+                            <label htmlFor={`file-upload-${doc.id}`}>
+                              <Upload className="mr-2 h-3 w-3" /> Browse Files
+                            </label>
+                          </Button>
                         </div>
                         {doc.files.length > 0 && (
                           <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground dark:text-slate-500">Files to upload:</p>
                             {doc.files.map((file, index) => (
-                              <div key={index} className="flex items-center justify-between text-xs bg-slate-100 dark:bg-slate-900 p-2 rounded">
-                                <span className="truncate max-w-[180px]">{file.name}</span>
+                              <div key={index} className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-950/30 p-2 rounded border border-green-200 dark:border-green-900">
+                                <span className="truncate max-w-[180px] dark:text-green-300">{file.name}</span>
                                 <button
                                   type="button"
                                   onClick={() => removeFile(doc.id, index)}
@@ -495,31 +464,17 @@ export function GrantDetailsPage() {
                   ))}
                 </div>
 
-                <div className="flex gap-3 mt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    disabled={isSubmitting}
-                    onClick={handleSaveDraft}
-                  >
-                    Save Application
-                  </Button>
+                <div className="mt-4">
                   <Button
                     type="submit"
-                    className="flex-1"
+                    className="w-full"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                    {isSubmitting ? "Saving..." : "Save Application"}
                   </Button>
                 </div>
               </form>
             </CardContent>
-            <CardFooter className="text-center">
-              <p className="text-xs text-muted-foreground">
-                By submitting, you agree to our Terms of Service and Privacy Policy.
-              </p>
-            </CardFooter>
           </Card>
         </div>
       </div>

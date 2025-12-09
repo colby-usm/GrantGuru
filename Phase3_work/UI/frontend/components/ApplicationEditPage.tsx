@@ -2,24 +2,25 @@ import React, { useEffect, useState } from "react";
 import DOMPurify from "dompurify";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Calendar, ArrowLeft, Save, Building2, X, Upload, CheckCircle2, AlertCircle, LinkIcon } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Calendar, ArrowLeft, Save, Building2, X, Upload } from "lucide-react";
 
 interface DocumentUpload {
   id: string;
   files: File[];
   type: string;
+}
+
+interface SavedDocument {
+  document_id: string;
+  document_name: string;
+  document_type: string;
+  document_size: number;
+  upload_date: string;
 }
 
 const API_BASE_URL = "http://127.0.0.1:5000";
@@ -54,8 +55,6 @@ export function ApplicationEditPage() {
 
   // Form state
   const [status, setStatus] = useState("pending");
-  const [applicantName, setApplicantName] = useState("");
-  const [applicantEmail, setApplicantEmail] = useState("");
 
   // Document Uploads State
   const [documents, setDocuments] = useState<DocumentUpload[]>([
@@ -65,13 +64,15 @@ export function ApplicationEditPage() {
     { id: "4", type: "Cover Letter", files: [] },
   ]);
 
+  // Saved documents from database
+  const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
+
   // Task management state
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTaskName, setNewTaskName] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [newTaskDeadline, setNewTaskDeadline] = useState("");
   const [isAddingTask, setIsAddingTask] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleLogout = () => {
     sessionStorage.removeItem('user_id');
@@ -102,10 +103,39 @@ export function ApplicationEditPage() {
     }));
   };
 
-  const scrollToApplication = () => {
-    const applicationSection = document.getElementById('application-form');
-    if (applicationSection) {
-      applicationSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleDeleteDocument = async (documentId: string) => {
+    if (!confirm("Are you sure you want to delete this document?")) {
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem("access_token");
+      if (!token) {
+        alert("Please log in");
+        navigate("/");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/user/applications/${applicationId}/documents/${documentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Remove the deleted document from the saved documents list
+        setSavedDocuments(prev => prev.filter(doc => doc.document_id !== documentId));
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to delete document");
+      }
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      alert("Failed to delete document");
     }
   };
 
@@ -137,8 +167,6 @@ export function ApplicationEditPage() {
         const appData = await appResponse.json();
         setApplication(appData.application);
         setStatus(appData.application.status);
-        setApplicantName(appData.application.applicant_name || "");
-        setApplicantEmail(appData.application.applicant_email || "");
 
         // Fetch grant details
         const grantResponse = await fetch(`${API_BASE_URL}/api/public/grant/${appData.application.grant_id}`);
@@ -159,6 +187,18 @@ export function ApplicationEditPage() {
           }
         }
 
+        // Fetch saved documents
+        const documentsResponse = await fetch(`${API_BASE_URL}/api/user/applications/${applicationId}/documents`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
+        if (documentsResponse.ok) {
+          const documentsData = await documentsResponse.json();
+          setSavedDocuments(documentsData.documents || []);
+        }
+
       } catch (err) {
         console.error(err);
         setError(err instanceof Error ? err.message : "Failed to load data");
@@ -173,19 +213,12 @@ export function ApplicationEditPage() {
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    // If application is already submitted, don't send submission_status to avoid changing it
-    if (application.submission_status === "submitted") {
-      await handleStatusOnlyUpdate();
-    } else {
-      await handleApplicationAction("started");
-    }
-  };
-
-  const handleStatusOnlyUpdate = async () => {
     setIsSaving(true);
 
     try {
       const token = sessionStorage.getItem("access_token");
+
+      // Step 1: Update application details
       const response = await fetch(`${API_BASE_URL}/api/user/applications/${applicationId}`, {
         method: "PUT",
         headers: {
@@ -194,62 +227,50 @@ export function ApplicationEditPage() {
         },
         body: JSON.stringify({
           status,
-          // Don't send submission_status to preserve the current value
+          submission_status: "started",
         }),
       });
 
       if (response.ok) {
-        alert("Status updated successfully!");
-      } else {
-        const data = await response.json();
-        alert(data.error || "Failed to update status");
-      }
-    } catch (error) {
-      console.error("Error updating status:", error);
-      alert("Failed to update status");
-    } finally {
-      setIsSaving(false);
-    }
-  };
+        // Step 2: Upload any new documents
+        const hasNewFiles = documents.some(doc => doc.files.length > 0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleApplicationAction("submitted");
-  };
+        if (hasNewFiles) {
+          for (const doc of documents) {
+            if (doc.files.length > 0) {
+              const formData = new FormData();
+              doc.files.forEach(file => {
+                formData.append('files', file);
+              });
+              formData.append('document_type', doc.type);
 
-  const handleApplicationAction = async (submissionStatus: "started" | "submitted") => {
-    setIsSaving(true);
+              const uploadResponse = await fetch(
+                `${API_BASE_URL}/api/user/applications/${applicationId}/documents`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Authorization": `Bearer ${token}`,
+                  },
+                  body: formData,
+                }
+              );
 
-    try {
-      const token = sessionStorage.getItem("access_token");
-      const response = await fetch(`${API_BASE_URL}/api/user/applications/${applicationId}`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status,
-          submission_status: submissionStatus,
-          applicant_name: applicantName,
-          applicant_email: applicantEmail,
-        }),
-      });
-
-      if (response.ok) {
-        if (submissionStatus === "submitted") {
-          setIsSuccess(true);
-        } else {
-          alert("Application saved successfully!");
-          navigate("/homepage");
+              if (!uploadResponse.ok) {
+                console.error(`Failed to upload ${doc.type} documents`);
+              }
+            }
+          }
         }
+
+        alert("Application and documents saved successfully!");
+        navigate("/homepage");
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to update application");
+        alert(data.error || "Failed to save application");
       }
     } catch (error) {
-      console.error("Error updating application:", error);
-      alert("Failed to update application");
+      console.error("Error saving application:", error);
+      alert("Failed to save application");
     } finally {
       setIsSaving(false);
     }
@@ -351,29 +372,6 @@ export function ApplicationEditPage() {
   if (loading) return <div className="p-6 dark:text-white">Loading...</div>;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!application || !grant) return <div className="p-6 dark:text-white">Application not found.</div>;
-
-  if (isSuccess) {
-    return (
-      <div className="container mx-auto py-20 px-4 max-w-2xl text-center space-y-6">
-        <div className="flex justify-center">
-          <CheckCircle2 className="h-24 w-24 text-green-500" />
-        </div>
-        <h1 className="text-3xl font-bold dark:text-white">Application Submitted!</h1>
-        <p className="text-muted-foreground dark:text-slate-400">
-          Your application for <strong>{grant.grant_title}</strong> has been successfully submitted.
-          You will receive updates on your application status.
-        </p>
-        <div className="flex justify-center gap-4 pt-4">
-          <Link to="/homepage">
-            <Button>View My Applications</Button>
-          </Link>
-          <Link to="/searchGrants">
-            <Button variant="outline">View More Grants</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
@@ -506,171 +504,154 @@ export function ApplicationEditPage() {
             })()}
           </div>
 
-          {/* Right Column: Application Edit Form or View-Only */}
+          {/* Right Column: Application Edit Form */}
           <div className="lg:col-span-1 space-y-6">
-            {application.submission_status === "submitted" ? (
-              /* Status-Only Edit for Submitted Applications */
-              <Card className="sticky top-6 dark:bg-slate-800 dark:border-slate-700 border-t-4 border-t-green-600 shadow-lg">
+            <>
+              <Card id="application-form" className="sticky top-6 dark:bg-slate-800 dark:border-slate-700 border-t-4 border-t-blue-600 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="dark:text-white">Submitted Application</CardTitle>
-                  <p className="text-sm text-muted-foreground dark:text-slate-400">This application has been submitted. Only status can be updated.</p>
+                  <CardTitle className="dark:text-white">Application Form</CardTitle>
+                  <CardDescription className="dark:text-slate-400">
+                    Save your application progress.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status" className="dark:text-slate-300">Application Status</Label>
-                    <Select value={status} onValueChange={setStatus}>
-                      <SelectTrigger className="dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="dark:bg-slate-800 dark:border-slate-700">
-                        <SelectItem value="pending" className="dark:text-white dark:focus:bg-slate-700">Pending</SelectItem>
-                        <SelectItem value="in_review" className="dark:text-white dark:focus:bg-slate-700">In Review</SelectItem>
-                        <SelectItem value="approved" className="dark:text-white dark:focus:bg-slate-700">Approved</SelectItem>
-                        <SelectItem value="rejected" className="dark:text-white dark:focus:bg-slate-700">Rejected</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="dark:text-slate-300">Date Applied</Label>
-                    <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-md border dark:border-slate-700 dark:text-white">
-                      {formatDate(application.application_date)}
-                    </div>
-                  </div>
-
-                  {application.notes && (
-                    <div className="space-y-2">
-                      <Label className="dark:text-slate-300">Notes</Label>
-                      <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-md border dark:border-slate-700 dark:text-white whitespace-pre-wrap">
-                        {application.notes}
-                      </div>
-                    </div>
-                  )}
-
-                  <Separator className="dark:bg-slate-700" />
-
-                  <div className="flex gap-2">
-                    <Button onClick={handleSave} disabled={isSaving} className="flex-1">
-                      <Save className="mr-2 h-4 w-4" />
-                      {isSaving ? "Saving..." : "Update Status"}
-                    </Button>
-                    <Button variant="outline" onClick={() => navigate("/homepage")} className="dark:border-slate-700 dark:text-white">
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              /* Editable Form for Started Applications */
-              <>
-                <Card id="application-form" className="sticky top-6 dark:bg-slate-800 dark:border-slate-700 border-t-4 border-t-blue-600 shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="dark:text-white">Application Form</CardTitle>
-                    <CardDescription className="dark:text-slate-400">
-                      Complete your application before submitting.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="dark:text-slate-300">Applicant Name</Label>
-                        <Input
-                          id="name"
-                          placeholder="Your Name or Organization"
-                          required
-                          value={applicantName}
-                          onChange={(e) => setApplicantName(e.target.value)}
-                          className="dark:bg-slate-900 dark:border-slate-700 dark:text-white"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="dark:text-slate-300">Contact Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="email@example.com"
-                          required
-                          value={applicantEmail}
-                          onChange={(e) => setApplicantEmail(e.target.value)}
-                          className="dark:bg-slate-900 dark:border-slate-700 dark:text-white"
-                        />
-                      </div>
-
-                      <Separator className="dark:bg-slate-700" />
-
+                <CardContent>
+                  <form onSubmit={handleSave} className="space-y-4">
                       <div className="space-y-3">
                         <Label className="dark:text-slate-300">Required Documents</Label>
-                        {documents.map((doc) => (
-                          <div key={doc.id} className="space-y-2">
-                            <span className="text-xs font-medium text-muted-foreground dark:text-slate-400">{doc.type}</span>
-                            <div className="space-y-2">
-                              <div className="items-center gap-2">
-                                <input
-                                  type="file"
-                                  multiple
-                                  className="hidden"
-                                  id={`file-upload-${doc.id}`}
-                                  onChange={(e) => {
-                                    handleFileChange(doc.id, e.target.files);
-                                    e.target.value = '';
-                                  }}
-                                />
-                                <Button asChild variant="outline" size="sm" className="w-full cursor-pointer dark:border-slate-700 dark:text-white">
-                                  <label htmlFor={`file-upload-${doc.id}`}>
-                                    <Upload className="mr-2 h-3 w-3" /> Browse Files
-                                  </label>
-                                </Button>
-                              </div>
-                              {doc.files.length > 0 && (
+                        {documents.map((doc) => {
+                          // Filter saved documents by type
+                          const savedDocsOfType = savedDocuments.filter(
+                            (savedDoc) => savedDoc.document_type === doc.type
+                          );
+
+                          return (
+                            <div key={doc.id} className="space-y-2">
+                              <span className="text-xs font-medium text-muted-foreground dark:text-slate-400">{doc.type}</span>
+
+                              {/* Show saved documents */}
+                              {savedDocsOfType.length > 0 && (
                                 <div className="space-y-1">
-                                  {doc.files.map((file, index) => (
-                                    <div key={index} className="flex items-center justify-between text-xs bg-slate-100 dark:bg-slate-900 p-2 rounded">
-                                      <span className="truncate max-w-[180px] dark:text-white">{file.name}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => removeFile(doc.id, index)}
-                                        className="text-slate-500 hover:text-red-500"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </button>
+                                  <p className="text-xs text-muted-foreground dark:text-slate-500">Previously uploaded:</p>
+                                  {savedDocsOfType.map((savedDoc) => (
+                                    <div key={savedDoc.document_id} className="flex items-center justify-between text-xs bg-blue-50 dark:bg-blue-950/30 p-2 rounded border border-blue-200 dark:border-blue-900">
+                                      <div className="flex-1 truncate">
+                                        <a
+                                          href="#"
+                                          className="font-medium dark:text-blue-300 hover:underline cursor-pointer"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            const token = sessionStorage.getItem("access_token");
+                                            fetch(`${API_BASE_URL}/api/user/applications/${applicationId}/documents/${savedDoc.document_id}/download`, {
+                                              headers: {
+                                                "Authorization": `Bearer ${token}`,
+                                              },
+                                            })
+                                              .then(response => response.blob())
+                                              .then(blob => {
+                                                const url = window.URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = savedDoc.document_name;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                window.URL.revokeObjectURL(url);
+                                                document.body.removeChild(a);
+                                              })
+                                              .catch(err => {
+                                                console.error("Download failed:", err);
+                                                alert("Failed to download document");
+                                              });
+                                          }}
+                                        >
+                                          {savedDoc.document_name}
+                                        </a>
+                                        <span className="text-muted-foreground dark:text-slate-500 ml-2">
+                                          ({(savedDoc.document_size / 1024).toFixed(1)} KB)
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-muted-foreground dark:text-slate-500">
+                                          {new Date(savedDoc.upload_date).toLocaleDateString()}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteDocument(savedDoc.document_id)}
+                                          className="text-slate-500 hover:text-red-500"
+                                          title="Delete document"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </div>
                                     </div>
                                   ))}
                                 </div>
                               )}
+
+                              {/* Upload new files */}
+                              <div className="space-y-2">
+                                <div className="items-center gap-2">
+                                  <input
+                                    type="file"
+                                    multiple
+                                    className="hidden"
+                                    id={`file-upload-${doc.id}`}
+                                    onChange={(e) => {
+                                      handleFileChange(doc.id, e.target.files);
+                                      e.target.value = '';
+                                    }}
+                                  />
+                                  <Button asChild variant="outline" size="sm" className="w-full cursor-pointer dark:border-slate-700 dark:text-white">
+                                    <label htmlFor={`file-upload-${doc.id}`}>
+                                      <Upload className="mr-2 h-3 w-3" /> {savedDocsOfType.length > 0 ? 'Upload Additional Files' : 'Browse Files'}
+                                    </label>
+                                  </Button>
+                                </div>
+                                {doc.files.length > 0 && (
+                                  <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground dark:text-slate-500">New files to upload:</p>
+                                    {doc.files.map((file, index) => (
+                                      <div key={index} className="flex items-center justify-between text-xs bg-green-50 dark:bg-green-950/30 p-2 rounded border border-green-200 dark:border-green-900">
+                                        <span className="truncate max-w-[180px] dark:text-green-300">{file.name}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => removeFile(doc.id, index)}
+                                          className="text-slate-500 hover:text-red-500"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       <div className="flex gap-3 mt-4">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="flex-1 dark:border-slate-700 dark:text-white"
-                          disabled={isSaving}
-                          onClick={handleSave}
-                        >
-                          Save Application
-                        </Button>
                         <Button
                           type="submit"
                           className="flex-1"
                           disabled={isSaving}
                         >
-                          {isSaving ? "Submitting..." : "Submit Application"}
+                          <Save className="mr-2 h-4 w-4" />
+                          {isSaving ? "Saving..." : "Save Application"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1 dark:border-slate-700 dark:text-white"
+                          onClick={() => navigate("/homepage")}
+                        >
+                          Cancel
                         </Button>
                       </div>
                     </form>
                   </CardContent>
-                  <CardFooter className="text-center dark:border-slate-700">
-                    <p className="text-xs text-muted-foreground dark:text-slate-500">
-                      By submitting, you agree to our Terms of Service and Privacy Policy.
-                    </p>
-                  </CardFooter>
                 </Card>
 
-                {/* Task Management Card - Only for Draft Applications */}
+                {/* Task Management Card */}
                 <Card className="dark:bg-slate-800 dark:border-slate-700">
                   <CardHeader>
                     <CardTitle className="dark:text-white">Application Tasks</CardTitle>
@@ -765,7 +746,6 @@ export function ApplicationEditPage() {
                   </CardContent>
                 </Card>
               </>
-            )}
           </div>
         </div>
       </div>

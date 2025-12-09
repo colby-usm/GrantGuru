@@ -14,18 +14,26 @@
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 import mysql.connector
 from mysql.connector import errorcode
 from src.utils.logging_utils import log_info, log_error
 
-#load_dotenv()
+# Load environment variables from .env file
+# Get the directory containing this script
+script_dir = Path(__file__).parent.parent.parent  # Go up to Phase2_work root
+dotenv_path = script_dir / ".env"
+
+# Load .env file explicitly
+load_dotenv(dotenv_path=dotenv_path)
+
 DB_NAME = os.getenv("DB_NAME", "GrantGuruDB")
 HOST = os.getenv("HOST", "localhost")
 MYSQL_USER = os.getenv("GG_USER", "root")
 MYSQL_PASS = os.getenv("GG_PASS", "password")
 
-print(MYSQL_PASS)
+print(f"Loading .env from: {dotenv_path}")
+print(f"Password loaded: {MYSQL_PASS}")
 INSTANTIATE_DB_COMMAND = f"CREATE DATABASE `{DB_NAME}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 BUILD_DIR = Path("src/db_creation/create_relations_commands")
 

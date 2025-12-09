@@ -15,11 +15,14 @@ cd /d "%~dp0.."
 
 REM ###############################################################################
 REM Set Database Environment Variables
+REM Note: The .env file in Phase2_work will be used for database credentials
+REM These environment variables are for reference only
 REM ###############################################################################
 
 echo Setting database environment variables...
+echo Using database credentials from Phase2_work/.env file
 set GG_USER=root
-set GG_PASS=Kappa20205!
+set "GG_PASS=Kappa20205!"
 set DB_NAME=GrantGuruDB
 set HOST=127.0.0.1
 echo [OK] Environment variables set
