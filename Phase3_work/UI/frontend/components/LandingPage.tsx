@@ -1,3 +1,9 @@
+/**
+ *  Author: Colby Wirth
+ *  File: LandingPage.tsx
+ *  Description: The landing page
+ */
+
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";

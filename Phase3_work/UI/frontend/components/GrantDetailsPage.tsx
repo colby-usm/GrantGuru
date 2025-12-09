@@ -478,27 +478,6 @@ export function GrantDetailsPage() {
           </Card>
         </div>
       </div>
-      <h1 className="text-3xl font-bold dark:text-white">{grant.grant_title}</h1>
-      <div className="text-sm text-slate-600 dark:text-slate-400">Provided by {grant.provider}</div>
-      <div className="mt-4 prose dark:prose-invert max-w-none">
-        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(grant.description || "") }} />
-        <dl>
-          <dt className="font-medium">Opportunity #</dt>
-          <dd>{grant.opportunity_number || "—"}</dd>
-          <dt className="font-medium">Research Field</dt>
-          <dd>{grant.research_field || "—"}</dd>
-          <dt className="font-medium">Award Range</dt>
-          <dd>{grant.award_min_amount || "—"} — {grant.award_max_amount || "—"}</dd>
-          <dt className="font-medium">Deadline</dt>
-          <dd>{grant.date_closed || "—"}</dd>
-        </dl>
-        {grant.link_to_source && (
-          <p>
-            <a href={grant.link_to_source} target="_blank" rel="noreferrer" className="text-blue-600 break-all hover:underline">
-              {grant.link_to_source}
-            </a>
-          </p>
-        )}
       </div>
 
       {/* Footer */}
